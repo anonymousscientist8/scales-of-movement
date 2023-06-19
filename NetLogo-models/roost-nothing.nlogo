@@ -28,7 +28,7 @@ globals
 turtles-own
 [
   r ; random number from uniform distribution between 0 and 1, used to determine whether a grooming event occurs
-  groom-choice
+  groom-choice ; Who the focal bat chooses to groom
   groom-log ; A log of every grooming events recipient
   grooming-prob ; The probability of grooming on any tick (static, same for all bats)
 ]
