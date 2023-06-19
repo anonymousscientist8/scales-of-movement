@@ -565,7 +565,7 @@ library(igraph)
 library(stringi)
 rm(list = ls())
 
-a <- sample(900:999,1)
+a <- sample(100:199,1)
 t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
 y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
