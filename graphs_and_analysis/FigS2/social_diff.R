@@ -64,19 +64,19 @@ Observations <- obs_count
 Y <- 25
 
 # Now create SRI association matrix
-sri <- data.frame(matrix(0,sum(Observations >  25),sum(Observations >  25)))
-m <- 1
-n <- 1
-for (i in 1:length(Bats_w)) {
-  n <- 1
-  for (j in 1:length(Bats_w)) {
-    if (Observations[i] > 25 & Observations[j] > 25) {
-      sri[m,n] <- x[i,j]/(x[i,j]+yab[i,j]+(obs_count[i]-yab[i,j]-x[i,j])+(obs_count[j]-yab[i,j]-x[i,j]))
-      n <- n + 1
+sri <- data.frame(matrix(0,sum(Observations >  25),sum(Observations >  25))) # Initialize
+m <- 1 # Index
+n <- 1 # Index
+for (i in 1:length(Bats_w)) { # For every bat
+  n <- 1 # Reset n to 1
+  for (j in 1:length(Bats_w)) { # And every other bat
+    if (Observations[i] > 25 & Observations[j] > 25) { # If both bats have been seen more than 25 times
+      sri[m,n] <- x[i,j]/(x[i,j]+yab[i,j]+(obs_count[i]-yab[i,j]-x[i,j])+(obs_count[j]-yab[i,j]-x[i,j])) # Find the sri
+      n <- n + 1 # And add 1 to n
     }
   }
-  if (Observations[i] > 25) {
-    m <- m + 1
+  if (Observations[i] > 25) { # If only the focal bat was seen more than 25 times
+    m <- m + 1 # Add 1 to m
   }
 }
 
@@ -91,26 +91,28 @@ soc_diff <- cbind(soc_diff,Observations[Observations > 25])
 # Main Graph
 soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
 
+# Export the roost social differentiation
 roost_soc_diff <- soc_diff
 write.csv(roost_soc_diff, "C:\\Users\\raven\\Documents\\roost_soc_diff.csv")
 
 # Now we perform a permutation test to test for significance
 # Get group-by-individual matrix
-Wilkinson <- wilkinson[(is.na(wilkinson$Band)==F),]
-roosts <- unique(Wilkinson$Roost)
-times <- unique(Wilkinson$Date)
-for (i in 1:length(times)) {
-  for (j in 1:length(roosts)) {
-    temp2 <- Wilkinson[!(Wilkinson$Date != times[i]),]
-    temp2 <- temp2[!(temp2$Roost != roosts[j]),]
-    if (length(temp2$ID) > 0) {
-      temp <- rep(NA,length(Bats_w)+2)
-      temp[1] <- times[i]
+Wilkinson <- wilkinson[(is.na(wilkinson$Band)==F),] # Filter
+roosts <- unique(Wilkinson$Roost) # Get all roosts
+times <- unique(Wilkinson$Date) # Get all dates
+for (i in 1:length(times)) { # For all dates
+  for (j in 1:length(roosts)) { # And for each roost
+    temp2 <- Wilkinson[!(Wilkinson$Date != times[i]),] # Filter to only the applicable date
+    temp2 <- temp2[!(temp2$Roost != roosts[j]),] # And place
+    if (length(temp2$ID) > 0) { # And if there's anything to look at
+      temp <- rep(NA,length(Bats_w)+2) # Initialize a vector
+      temp[1] <- times[i] # Get the applicable times and roost
       temp[2] <- roosts[j]
-      l <- length(temp2$ID)
-      for (k in 1:l) {
-        temp[k+2] <- temp2$ID[k]
+      l <- length(temp2$ID) # And find the number of entries applicable
+      for (k in 1:l) { # And for each entry
+        temp[k+2] <- temp2$ID[k] # Store the ID of the bat
       }
+      # Then create a matrix showing where bats are at each time
       if (i == 1 & j == 1) {
         mat <- temp
       } else {
@@ -119,22 +121,22 @@ for (i in 1:length(times)) {
     }
   }
 }
-mat <- data.frame(mat)
-rownames(mat) <- NULL
+mat <- data.frame(mat) # Turn that matrix into a data frame
+rownames(mat) <- NULL # Replace the column names with the date, roost, and bat ID
 colnames(mat) <- c("Date","Roost",paste("Bat",1:(ncol(mat)-2),sep = "_"))
-mat2 <- apply(mat[,3:ncol(mat)], 1, function(x) match(Bats_w,x))
-mat2[is.na(mat2)] <- 0
-mat2[mat2>0] <- 1
-rownames(mat2) <- Bats_w
-colnames(mat2) <- paste('group', 1:ncol(mat2), sep="_")
-mat2 <- mat2[which(rowSums(mat2)>25),]
-gbi <- t(mat2)
-adj <- get_network(gbi, data_format="GBI", association_index = "SRI")
-soc_diff2 <- rep(0,ncol(adj))
-for (i in 1:length(adj[1,])) {
+mat2 <- apply(mat[,3:ncol(mat)], 1, function(x) match(Bats_w,x)) # Get matrix that shows the presence of each bat
+mat2[is.na(mat2)] <- 0 # Turn NA's to 0's
+mat2[mat2>0] <- 1 # If there are values greater than 0, mark them as 1
+rownames(mat2) <- Bats_w # Name the rows after the bats
+colnames(mat2) <- paste('group', 1:ncol(mat2), sep="_") # Name the columns as groups
+mat2 <- mat2[which(rowSums(mat2)>25),] # Filter
+gbi <- t(mat2) # Transpose to get group-by-individual matrix
+adj <- get_network(gbi, data_format="GBI", association_index = "SRI") # Get adjacency matrix
+soc_diff2 <- rep(0,ncol(adj)) # Initialize social differentiation vector
+for (i in 1:length(adj[1,])) { # Find "Social differentiation" for each bat
   soc_diff2[i] <- sd(adj[,i], na.rm = T)/mean(adj[,i], na.rm = T)
 }
-soc_diff2 <- data.frame(soc_diff2)
+soc_diff2 <- data.frame(soc_diff2) # Make a data frame
 
 # making randomized networks
 rand.nets <- network_permutation(gbi, data_format = "GBI", permutations = 100, association_index = "SRI")
@@ -292,13 +294,13 @@ for (i in 1:length(bats_i)) {
 Y <- 100
 
 # Now create SRI association matrix
-sri <- data.frame(matrix(0,sum(Observations >  100),sum(Observations >  100)))
-m <- 1
-n <- 1
-for (i in 1:length(bats_i)) {
+sri <- data.frame(matrix(0,sum(Observations >  100),sum(Observations >  100))) # Create a matrix with dimensions of bats we care about
+m <- 1 # index 1
+n <- 1 # index 2
+for (i in 1:length(bats_i)) { # For each bat
   n <- 1
-  for (j in 1:length(bats_i)) {
-    if (Observations[i] > 100 & Observations[j] > 100) {
+  for (j in 1:length(bats_i)) { # Look at each other bat
+    if (Observations[i] > 100 & Observations[j] > 100) { # And if both are ones we care about, calculate the sri
       sri[m,n] <- x[i,j]/(x[i,j]+yab[i,j]+(obs_count[i]-yab[i,j]-x[i,j])+(obs_count[j]-yab[i,j]-x[i,j]))
       n <- n + 1
     }
@@ -319,6 +321,7 @@ soc_diff <- cbind(soc_diff,Observations[Observations > 100])
 # Plot the social differentiation compared to the number of observations
 soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
 
+# Export data frame
 cluster_soc_diff <- soc_diff
 write.csv(cluster_soc_diff, "C:\\Users\\raven\\Documents\\cluster_soc_diff.csv")
 
@@ -327,18 +330,18 @@ write.csv(cluster_soc_diff, "C:\\Users\\raven\\Documents\\cluster_soc_diff.csv")
 imran3 <- imran[!(imran$cluster == 0),]
 cameras <- c(1,2,3)
 z <- 0
-for (i in 1:length(times_i)) {
-  for (j in 1:3) {
-    temp2 <- imran3[!(imran3$period != times_i[i]),]
-    temp2 <- temp2[!(temp2$camera != cameras[j]),]
-    if (length(temp2$A) > 0) {
-      temp <- rep(NA,length(bats_i[Observations > 100])+2)
-      temp[1] <- times_i[i]
-      temp[2] <- cameras[j]
-      l <- unique(as.vector(as.matrix(temp2[,9:30])),na.rm = T)
-      m <- l[l != 0]
-      m <- m[m != "alexi"]
-      for (n in 1:30) {
+for (i in 1:length(times_i)) { # For all times
+  for (j in 1:3) { # Check each cluster
+    temp2 <- imran3[!(imran3$period != times_i[i]),] # Filter to each time
+    temp2 <- temp2[!(temp2$camera != cameras[j]),] # And camera
+    if (length(temp2$A) > 0) { # If entries still exist
+      temp <- rep(NA,length(bats_i[Observations > 100])+2) # Make vector for bats presence
+      temp[1] <- times_i[i] # With the first entry as the time
+      temp[2] <- cameras[j] # and the second as the camera
+      l <- unique(as.vector(as.matrix(temp2[,9:30])),na.rm = T) # Find all unique bats in that matrix
+      m <- l[l != 0] # Filter out zeros
+      m <- m[m != "alexi"] # And alexi
+      for (n in 1:30) { # Mark where all bats were found
         if (length(m) == 30) {
           temp[2+n] <- m[n]
         } else {
@@ -358,20 +361,20 @@ for (i in 1:length(times_i)) {
     }
   }
 }
-mat <- data.frame(mat)
-mat2 <- apply(mat[,3:ncol(mat)], 1, function(x) match(bats_i,x))
-mat2[is.na(mat2)] <- 0
-mat2[mat2>0] <- 1
-rownames(mat2) <- bats_i
-colnames(mat2) <- paste('group', 1:ncol(mat2), sep="_")
-mat2 <- mat2[which(rowSums(mat2)>100),]
-gbi <- t(mat2)
-adj <- get_network(gbi, data_format="GBI", association_index = "SRI")
-soc_diff2 <- rep(0,ncol(adj))
-for (i in 1:length(adj[1,])) {
+mat <- data.frame(mat) # Make into data frame
+mat2 <- apply(mat[,3:ncol(mat)], 1, function(x) match(bats_i,x))  # Get matrix that shows the presence of each bat
+mat2[is.na(mat2)] <- 0 # Turn NA's to 0's
+mat2[mat2>0] <- 1 # Mark presence as 1
+rownames(mat2) <- bats_i # Change rownames to bat names
+colnames(mat2) <- paste('group', 1:ncol(mat2), sep="_") # And column names to groups
+mat2 <- mat2[which(rowSums(mat2)>100),] # Filter
+gbi <- t(mat2) # Get group-by-individual matrix
+adj <- get_network(gbi, data_format="GBI", association_index = "SRI") # Get adjacency matrix
+soc_diff2 <- rep(0,ncol(adj)) # Initialize social differentiation vector
+for (i in 1:length(adj[1,])) { # Find social differentiation
   soc_diff2[i] <- sd(adj[,i], na.rm = T)/mean(adj[,i], na.rm = T)
 }
-soc_diff2 <- data.frame(soc_diff2)
+soc_diff2 <- data.frame(soc_diff2) # Make data frame
 
 # making randomized networks
 rand.nets <- network_permutation(gbi, data_format = "GBI", permutations = 50000, association_index = "SRI")
@@ -644,7 +647,7 @@ ggplot() +
 
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-# Permutation test (randomize within cage, because I don't know who is in what cluster)
+# Permutation test, made with the assistance of ChatGPT
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
@@ -673,20 +676,21 @@ for (i in 1:100) {
         d2$partner[j] <- id_check
       }
     } else {
-      while (id_check == 0 || identical(id_check, d2$id[j])) {
-        remaining_options <- which(possible_partners != 0)
+      while (id_check == 0 || identical(id_check, d2$id[j])) { # While we haven't found a valid partner
+        remaining_options <- which(possible_partners != 0) # Look at remaining options
         
+        # If there are no more remaining options, break the while loop
         if (length(remaining_options) == 0 || all(possible_partners[remaining_options] == d2$id[j])) {
           break
         }
         
-        row_num <- sample(remaining_options, 1)
-        id_check <- possible_partners[row_num]
+        row_num <- sample(remaining_options, 1) # Pick a random row
+        id_check <- possible_partners[row_num] # And store the associated bat for checks
       }
       
-      possible_partners[row_num] <- 0
-      assigned_partners[j] <- id_check
-      d2$partner[j] <- id_check
+      possible_partners[row_num] <- 0 # Remove assigned partner from list of potentials
+      assigned_partners[j] <- id_check # Mark the assigned partner
+      d2$partner[j] <- id_check # Set the new value
     }
   }
   
@@ -728,6 +732,8 @@ ggplot() +
   geom_vline(aes(xintercept = obs), color = "red", linetype = "dashed") +
   xlab("Social Differentiation")
 
+########################################################################
+# Did not end up using this block of code
 denom <- length(y[1,])
 num_bats <- length(bats[,1])
 sri <- matrix(0, nrow = num_bats, ncol = num_bats)
@@ -847,6 +853,7 @@ for (i in seq(2,denom,60*24)) {
   }
 }
 
+# Ger adjacency matrix
 adj <- get_network(gbi, data_format="GBI", association_index = "SRI")
 soc_diff2 <- rep(0,ncol(adj))
 for (i in 1:length(adj[1,])) {
@@ -965,26 +972,26 @@ ggplot() +
 resample <- function(x, ...)
   x[sample.int(length(x), ...)]
 
-psdm <- rep(0, 100)
+psdm <- rep(0, 100) # For permutation test social differentiation
 for (i in 1:100) {
   d2 <- d
   
-  all_groups <- unique(d2$group)
+  all_groups <- unique(d2$group) # Get all unique groups
   
-  for (k in 1:length(all_groups)) {
-    possible <- length(d2$partner[d2$group == all_groups[k]])
-    possible_partners <- d2$partner[d2$group == all_groups[k]]
+  for (k in 1:length(all_groups)) { # For all groups
+    possible <- length(d2$partner[d2$group == all_groups[k]]) # Find the number of possible partners
+    possible_partners <- d2$partner[d2$group == all_groups[k]] # Find all possible partners
     assigned_partners <-
-      vector("character", length = length(d2$id[d2$group == all_groups[k]]))
-    for (j in 1:length(d2$id[d2$group == all_groups[k]])) {
+      vector("character", length = length(d2$id[d2$group == all_groups[k]])) # Stores already used partners
+    for (j in 1:length(d2$id[d2$group == all_groups[k]])) { # For all bats in a group
       id_check <- 0
-      remaining_options <- which(possible_partners != 0)
+      remaining_options <- which(possible_partners != 0) # Find all remaining options
       
       # Check if all remaining options are the same as d2$id[j]
-      temp <- d2$id[d2$group == all_groups[k]]
-      temp2 <- d2$partner[d2$group == all_groups[k]]
+      temp <- d2$id[d2$group == all_groups[k]] # Filter id to the correct group
+      temp2 <- d2$partner[d2$group == all_groups[k]] # Filter partner to the correct group
       if (length(remaining_options) == 0 ||
-          all(possible_partners[remaining_options] == temp[j])) {
+          all(possible_partners[remaining_options] == temp[j])) { # If we don't have any remaining options
         # Select random partner from assigned_partners, excluding the last entry
         available_partners <- assigned_partners[1:(j - 1)]
         partner_idx <- sample(length(available_partners), 1)
@@ -995,13 +1002,13 @@ for (i in 1:100) {
           partner_idx <- sample(length(available_partners), 1)
           id_check <- available_partners[partner_idx]
         }
-        assigned_partners[partner_idx] <- temp[j]
+        assigned_partners[partner_idx] <- temp[j] # Store the assigned partner
         group_condition <- d2$group == all_groups[k]
-        partner_column <- d2$partner[group_condition]
-        id_column <- d2$id[group_condition]
-        partner_column[j] <- id_check
-        partner_column[partner_idx] <- temp2[j]
-        d2$partner[group_condition] <- partner_column
+        partner_column <- d2$partner[group_condition] # Get all partners following the group conditional
+        id_column <- d2$id[group_condition] # Do the same with id
+        partner_column[j] <- id_check # Store the new partner
+        partner_column[partner_idx] <- temp2[j] # Flipping with the old one
+        d2$partner[group_condition] <- partner_column # Then put back into data frame
         if (any(d2$partner == d2$id & d2$group == all_groups[k])) {
           print("divider")
           print(partner_column[j])
@@ -1011,26 +1018,26 @@ for (i in 1:100) {
         }
       } else {
         while (id_check == 0 || identical(id_check, temp[j])) {
+          # If out of options, break
           if (length(remaining_options) == 0 ||
               all(possible_partners[remaining_options] == temp[j])) {
             break
           }
           
-          row_num <- sample(remaining_options, 1)
-          id_check <- possible_partners[row_num]
+          row_num <- sample(remaining_options, 1) # Resample row number
+          id_check <- possible_partners[row_num] # Resample partners and check if its the same as id
         }
-        possible_partners[row_num] <- 0
-        assigned_partners[j] <- id_check
+        possible_partners[row_num] <- 0 # Update possible partners
+        assigned_partners[j] <- id_check # Update assigned partners
         group_condition <- d2$group == all_groups[k]
-        partner_column <- d2$partner[group_condition]
-        partner_column[j] <- id_check
-        d2$partner[group_condition] <- partner_column
-        if (any(d2$partner == d2$id & d2$group == all_groups[k])) {
-          print("second part")
-        }
+        partner_column <- d2$partner[group_condition] # Make partner_column all partners that follow the group condition
+        partner_column[j] <- id_check # Update partner
+        d2$partner[group_condition] <- partner_column # And store in data frame
       }
     }
   }
+  
+  # Make edge list
   el <-
     d2 %>%
     group_by(id, partner) %>%
@@ -1356,8 +1363,8 @@ for (i in 1:100) {
         d2$partner[j] <- id_check
       }
     } else {
-      while (id_check == 0 || identical(id_check, d2$id[j])) {
-        remaining_options <- which(possible_partners != 0)
+      while (id_check == 0 || identical(id_check, d2$id[j])) { # Until we get a valid partner
+        remaining_options <- which(possible_partners != 0) # Get the remaining options
         
         if (length(remaining_options) == 0 || all(possible_partners[remaining_options] == d2$id[j])) {
           break
@@ -1488,7 +1495,7 @@ ggplot() +
 
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-# Permutation test (randomize within cage, because I don't know who is in what cluster)
+# Permutation test, made with the assistance of ChatGPT
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
@@ -1649,7 +1656,7 @@ ggplot() +
 
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-# Permutation test (randomize within cage, because I don't know who is in what cluster)
+# Permutation test, made with the assistance of ChatGPT
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
