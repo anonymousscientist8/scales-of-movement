@@ -8,13 +8,13 @@ library(stringi)
 rm(list = ls())
 
 # Get cluster switching and partner switching rates
-cs <- read.csv("filepath\\cluster_sw.csv")
-ps <- read.csv("filepath\\partner_sw.csv")
-ps2 <- read.csv("filepath\\partner_sw2.csv")
+cs <- read.csv("C:\\Users\\raven\\Documents\\cluster_sw.csv")
+ps <- read.csv("C:\\Users\\raven\\Documents\\partner_sw.csv")
+ps2 <- read.csv("C:\\Users\\raven\\Documents\\partner_sw2.csv")
 
 # get grooming degree
 gd <- 
-  read.csv("filepath\\partner_switching.csv") %>% 
+  read.csv("C:\\Users\\raven\\Documents\\partner_switching.csv") %>% 
   filter(duration >0) %>% 
   mutate(bat= actor) %>% 
   group_by(bat, receiver) %>% 
@@ -32,22 +32,22 @@ gd$ps <- ps$partner_sw[match(gd$bat, ps$bats_i)]
 gd$ps2 <- ps2$partner_sw2[match(gd$bat, ps$bats_i)]
 
 # Obtain best fit and relationship metrics
-coot <- rep(0,1000)
-for (i in 1:1000) {
+coot <- rep(0,1000) # Initialize vector
+for (i in 1:1000) { # Run 1000 permutation tests and extract coefficients
   data2 <- gd[sample(nrow(gd),size = nrow(gd),replace = T),]
   fit <- lm(n ~ cs, data = data2)
   a <- coefficients(fit)
   coot[i] <- a[2]
 }
-poot <- rep(0,1000)
-for (i in 1:1000) {
+poot <- rep(0,1000) # Initialize vector
+for (i in 1:1000) { # Run 1000 permutation tests and extract coefficients
   data2 <- gd[sample(nrow(gd),size = nrow(gd),replace = T),]
   fit <- lm(n ~ ps, data = data2)
   a <- coefficients(fit)
   poot[i] <- a[2]
 }
-poot2 <- rep(0,1000)
-for (i in 1:1000) {
+poot2 <- rep(0,1000) # Initialize vector
+for (i in 1:1000) { # Run 1000 permutation tests and extract coefficients
   data2 <- gd[sample(nrow(gd),size = nrow(gd),replace = T),]
   fit <- lm(n ~ ps, data = data2)
   a <- coefficients(fit)
@@ -84,7 +84,8 @@ gd %>%
   ggtitle("Within-Cluster Partner Switching Predicts Degree Centrality")+
   theme_bw()
 
-write.csv(gd, "filepath\\gd.csv")
+# Export
+write.csv(gd, "C:\\Users\\raven\\Documents\\gd.csv")
 
 ################################################################################
 # Predicting grooming centrality from cluster switching
@@ -95,46 +96,46 @@ library(tidyverse)
 library(stringi)
 
 # get roost switching prob
-rs <- read.csv("filepath\\roost_sw.csv")
+rs <- read.csv("C:\\Users\\raven\\Documents\\roost_sw.csv")
 bats_r <- unique(rs$Bats_w)
 
   
 # Load in transcripted data of grooming events for roost switching data
-grooming <- read.csv("filepath\transcribe.csv")
+grooming <- read.csv("C:\\Users\\raven\\Documents\\transcribe.csv")
 
 # Find the grooming degree centrality
-bats <- unique(grooming$donor)
-centrality <- rep(0,length(bats))
-for (i in 1:length(centrality)) {
-  temp <- grooming[!(grooming$donor != bats[i]),]
-  centrality[i] <- length(temp$donor)
+bats <- unique(grooming$donor) # Find all unique bats
+centrality <- rep(0,length(bats)) # Initialize vector
+for (i in 1:length(centrality)) { # For all bats
+  temp <- grooming[!(grooming$donor != bats[i]),] # Find all situations where the focal bat is the donor
+  centrality[i] <- length(temp$donor) # And find the number of bats groomed
 }
-centrality <- data.frame(bats,centrality)
-for (i in 1:length(centrality$bats)) {
+centrality <- data.frame(bats,centrality) # Then make a data frame
+for (i in 1:length(centrality$bats)) { # Mark these as females
   stri_sub(centrality$bats[i],nchar(centrality$bats[i])-6,nchar(centrality$bats[i])-3) <- "F"
 }
 
 # Look at common elements
-bats_p <- centrality$bats
-bool <- bats_p %in% bats_r
-for (i in 1:length(bool)) {
-  if (bool[i] == FALSE) {
-    centrality <- centrality[!(centrality$bats == bats_p[i]),]
+bats_p <- centrality$bats # Get bats in this dataset
+bool <- bats_p %in% bats_r # Find all bats found in both datasets
+for (i in 1:length(bool)) { # For all bats
+  if (bool[i] == FALSE) { # If bats are not in both datasets
+    centrality <- centrality[!(centrality$bats == bats_p[i]),] # Remove them 
   }
 }
-roost_switch <- rep(0,length(centrality$bats))
-for (i in 1:length(centrality$bats)) {
-  for (j in 1:length(rs$Bats_w)) {
-    bool <- rs$Bats_w[j] == centrality$bats[i]
-    if (bool == TRUE) {
-      roost_switch[i] <- rs$roost_sw[j]
+roost_switch <- rep(0,length(centrality$bats)) # Initialize vector
+for (i in 1:length(centrality$bats)) { # For the length of the vector
+  for (j in 1:length(rs$Bats_w)) { # For all bats in the roost switching data
+    bool <- rs$Bats_w[j] == centrality$bats[i] # Determine whether the bats in both datasets are the same
+    if (bool == TRUE) { # And if they are
+      roost_switch[i] <- rs$roost_sw[j] # store the roost switching data
     }
   }
 }
-centrality <- data.frame(cbind(centrality, roost_switch))
+centrality <- data.frame(cbind(centrality, roost_switch)) # Combine the centrality and roost switching data
 
-root <- rep(0,1000)
-for (i in 1:1000) {
+root <- rep(0,1000) # Initialize vector
+for (i in 1:1000) { # Run 1000 permutations and extract coefficients
   data2 <- centrality[sample(nrow(centrality),size = nrow(centrality),replace = T),]
   fit <- lm(centrality ~ roost_switch, data = data2)
   a <- coefficients(fit)
@@ -150,5 +151,6 @@ ggplot(data = centrality) +
   ggtitle("Roost Switching Does Not Predict Outdegree Centrality")+
   theme_bw()
 
-write.csv(centrality, "filepath\\centrality.csv")
+# Export
+write.csv(centrality, "C:\\Users\\raven\\Documents\\centrality.csv")
 
