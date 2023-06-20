@@ -5,14 +5,14 @@ rm(list = ls())
 library(igraph)
 library(tidyverse)
 
-# Make empty matrices
+# Make 3 x 100 data frames
 degree_est <- data.frame(matrix(ncol=100,nrow=3))
 pagerank_est <- data.frame(matrix(ncol=100,nrow=3))
 
-for (a in XX00:XX99) {
+for (a in 2100:2199) { # For the specified range
 print(a)
 # get raw data
-t <- read.table(gsub(' ', '', paste('filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -49,6 +49,7 @@ d <-
   # delete NAs
   filter(!is.na(partner))
 
+# Remove blanks
 d <- d[!(d$partner == ""),]
 
 # inspect events
@@ -137,18 +138,18 @@ bats %>%
   geom_point()+
   geom_smooth(method= "lm")
 
-# Extract coefficients
+# Get coefficients from generalized linear model
 fit1 <- summary(glm(degree~ scale(rs)+ scale(cs)+ scale(ps), family = "poisson", data= bats))
 fit1 <- coefficients(fit1)
-fit1 <- data.frame(fit1)
-degree_est[1,a-XX00+1] <- fit1[2,1]
-degree_est[2,a-XX00+1] <- fit1[3,1]
-degree_est[3,a-XX00+1] <- fit1[4,1]
+fit1 <- data.frame(fit1) # Make into data frame
+degree_est[1,a-2100+1] <- fit1[2,1] # Get effects from roost switching 
+degree_est[2,a-2100+1] <- fit1[3,1] # Get effects from cluster switching
+degree_est[3,a-2100+1] <- fit1[4,1] # Get effects from partner switching
 rownames(degree_est) <- c('scale(rs)','scale(cs)','scale(ps)')
 
 
 # what predicts reverse pagerank centrality?
-bats %>% 
+bats %>% # Make basic test plots
   dplyr::select(id, rs, cs, ps, degree, pagerank) %>% 
   pivot_longer(rs:ps, names_to= "type", values_to= "switching_rate") %>% 
   mutate(type= case_when(
@@ -160,20 +161,12 @@ bats %>%
   geom_point()+
   geom_smooth(method= "lm")
 
-# Extract coefficients
+# Same as above, now with pagerank
 fit2 <- summary(glm(pagerank~ scale(rs)+ scale(cs)+ scale(ps), family = "poisson", data= bats))
 fit2 <- coefficients(fit2)
 fit2 <- data.frame(fit2)
-pagerank_est[1,a-XX00+1] <- fit2[2,1]
-pagerank_est[2,a-XX00+1] <- fit2[3,1]
-pagerank_est[3,a-XX00+1] <- fit2[4,1]
+pagerank_est[1,a-2100+1] <- fit2[2,1]
+pagerank_est[2,a-2100+1] <- fit2[3,1]
+pagerank_est[3,a-2100+1] <- fit2[4,1]
 rownames(pagerank_est) <- c('scale(rs)','scale(cs)','scale(ps)')
 }
-
-# Transpose
-degree_est <- data.frame(t(degree_est))
-pagerank_est <- data.frame(t(pagerank_est))
-
-write.csv(degree_est, "filepath\\degree_estXX.csv")
-write.csv(pagerank_est, "filepath\\pagerank_estXX.csv")
-
