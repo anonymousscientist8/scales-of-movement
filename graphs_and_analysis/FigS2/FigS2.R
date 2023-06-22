@@ -41,9 +41,9 @@ Mean <- cbind(cols,Mean)
 
 # Create graph labels
 label <- c(
-  "a" = "(a) Roost Association Network",
-  "b" = "(b) Cluster Association Network",
-  "c" = "(c) Grooming Nework"
+  "a" = "(a) roost association network",
+  "b" = "(b) cluster association network",
+  "c" = "(c) grooming nework"
 )
 
 # Setup graph theme
