@@ -35,6 +35,7 @@ merged_data <- merged_data[,-3]
 merged_data <- merged_data[,-3]
 merged_data <- merged_data[,-4]
 colnames(merged_data) <- c("a","b","c")
+merged_data$c <- merged_data$c * 24
 
 # Find the mean of each column and add to data
 Mean <- data.frame(colMeans(merged_data, na.rm = T))
@@ -44,9 +45,9 @@ Mean <- cbind(cols,Mean)
 
 # Graph labels
 label <- c(
-  "a" = "(a) Roost Switches / Day",
-  "b" = "(b) Cluster Switches / Day",
-  "c" = "(c) Partner Switches / Hour"
+  "a" = "(a) Roost switching",
+  "b" = "(b) Cluster switching",
+  "c" = "(c) Partner switching"
 )
 
 # Graph theme
@@ -57,4 +58,5 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 ggplot() + 
   geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 30, colour = "black", fill = "light blue") +
   geom_vline(data = Mean, aes(xintercept = value), color = "red", linetype = "dashed") +
-  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 1, strip.position = "bottom")
+  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 3) +
+  xlab("switching rate (switches / day)")
