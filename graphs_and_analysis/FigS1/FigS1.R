@@ -5,9 +5,9 @@ library(stringi)
 rm(list = ls())
 
 # Download average movement rate data
-roost_sw <- read.csv("filepath\\roost_sw.csv")
-cluster_sw <- read.csv("filepath\\cluster_sw.csv")
-partner_sw <- read.csv("filepath\\partner_sw.csv")
+roost_sw <- read.csv("C:\\Users\\raven\\Documents\\roost_sw.csv")
+cluster_sw <- read.csv("C:\\Users\\raven\\Documents\\cluster_sw.csv")
+partner_sw <- read.csv("C:\\Users\\raven\\Documents\\partner_sw.csv")
 
 # Find the number of rows, and the maximum nnumber of rows between the three
 r_rows <- nrow(roost_sw)
@@ -55,6 +55,6 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 
 # Plot
 ggplot() + 
-  geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 25, colour = "black", fill = "light blue") +
+  geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 30, colour = "black", fill = "light blue") +
   geom_vline(data = Mean, aes(xintercept = value), color = "red", linetype = "dashed") +
-  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 3, strip.position = "bottom")
+  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 1, strip.position = "bottom")
