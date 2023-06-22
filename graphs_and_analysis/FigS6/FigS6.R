@@ -29,11 +29,11 @@ d <- d[,-5]
 
 # Add label
 label <- c(
-  "exp1" = "A. Original simulation",
-  "exp2" = "B. Removing hierarchically embedded scales of movement (bats stay within one cluster)",
-  "exp3" = "C. Removal of individual variation in partner switching (bats also have same switching propensity)",
-  "exp4" = "D. Removal of partner fidelity due to location (bats also groom a random available partner every minute)",
-  "exp5" = "E. Removal of variation in behavior (bats also groom at same time)"
+  "exp1" = "(a) original simulation",
+  "exp2" = "(b) removing hierarchically embedded scales of movement (bats stay within one cluster)",
+  "exp3" = "(c) removal of individual variation in partner switching (bats also have same switching propensity)",
+  "exp4" = "(d) removal of partner fidelity due to location (bats also groom a random available partner every minute)",
+  "exp5" = "(e) removal of variation in behavior (bats also groom at same time)"
 )
 
 # Theme
@@ -46,6 +46,6 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
     geom_histogram(data = gather(d, cols, value), aes(x = value), binwidth = 0.001, colour = "lightblue", fill = "lightblue") +
     geom_vline(data = obs, aes(xintercept = value), color = "black", linetype = "solid") +
     facet_wrap(.~cols, scales = "fixed", labeller = as_labeller(label), nrow = 5, strip.position = "top") +
-    xlab("Social Differentiation: Expected (blue) vs Observed (red)") +
-    ylab("Frequency")+
+    xlab("social differentiation: expected (blue) vs observed (black)") +
+    ylab("frequency")+
     labs(subtitle = "Convergence of agent-based model with reference model shows that\nhierarchically embedded scales of movement creates false social differentiation"))
