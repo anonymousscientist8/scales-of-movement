@@ -45,9 +45,9 @@ Mean <- cbind(cols,Mean)
 
 # Graph labels
 label <- c(
-  "a" = "(a) Roost switching",
-  "b" = "(b) Cluster switching",
-  "c" = "(c) Partner switching"
+  "a" = "(a) roost switching",
+  "b" = "(b) cluster switching",
+  "c" = "(c) partner switching"
 )
 
 # Graph theme
@@ -58,5 +58,5 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 ggplot() + 
   geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 30, colour = "black", fill = "light blue") +
   geom_vline(data = Mean, aes(xintercept = value), color = "red", linetype = "dashed") +
-  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 3) +
+  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label), nrow = 1) +
   xlab("switching rate (switches / day)")
