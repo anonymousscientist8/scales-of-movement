@@ -5,9 +5,9 @@ library(stringi)
 rm(list = ls())
 
 # Download social differentiation data
-roost_soc_diff <- read.csv("filepath\\roost_soc_diff.csv")
-cluster_soc_diff <- read.csv("filepath\\cluster_soc_diff.csv")
-partner_soc_diff <- read.csv("filepath\\partner_soc_diff.csv")
+roost_soc_diff <- read.csv("C:\\Users\\raven\\Documents\\roost_soc_diff.csv")
+cluster_soc_diff <- read.csv("C:\\Users\\raven\\Documents\\cluster_soc_diff.csv")
+partner_soc_diff <- read.csv("C:\\Users\\raven\\Documents\\partner_soc_diff.csv")
 
 # Get the number of rows for each dataset and find the max number of rows between
 # the three
@@ -41,9 +41,9 @@ Mean <- cbind(cols,Mean)
 
 # Create graph labels
 label <- c(
-  "a" = "(a) Roost Association Network Social Differentiation",
-  "b" = "(b) Cluster Association Network Social Differentiation",
-  "c" = "(c) Grooming Nework Social Differentiation"
+  "a" = "(a) Roost Association Network Social Diff.",
+  "b" = "(b) Cluster Association Network Social Diff.",
+  "c" = "(c) Grooming Nework Social Diff."
 )
 
 # Setup graph theme
@@ -52,7 +52,8 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 
 # Plot as histogram
 ggplot() + 
-  geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 15, colour = "black", fill = "light blue") +
+  geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 25, colour = "black", fill = "light blue") +
   geom_vline(data = Mean, aes(xintercept = value), color = "red", linetype = "dashed") +
-  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label),nrow = 3) +
+  facet_wrap(.~cols, scales = "free", labeller = as_labeller(label),nrow = 1) +
   xlab("Social Differentiation")
+
