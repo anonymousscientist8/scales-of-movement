@@ -5,7 +5,7 @@ library(stringi)
 rm(list = ls())
 
 # Load data
-gd <- read.csv("filepath\\gd.csv")
+gd <- read.csv("C:\\Users\\raven\\Documents\\gd.csv")
 gd <- gd[,c(-1,-2,-3)] # Reorganize
 
 # Pull out cluster switching effects and partner switching effects
@@ -44,6 +44,6 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 ggplot(data = gd, mapping =  aes(x = cs, y = ps2)) + 
   geom_point() +
   geom_smooth(method = 'lm') +
-  xlab("Cluster Switching Rate (switches / day)") +
-  ylab("Partner Switching Rate (switches / hour)")
+  xlab("cluster switching rate (switches / day)") +
+  ylab("partner switching rate (switches / hour)")
 
