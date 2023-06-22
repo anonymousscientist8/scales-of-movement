@@ -41,9 +41,9 @@ Mean <- cbind(cols,Mean)
 
 # Create graph labels
 label <- c(
-  "a" = "(a) Roost Association Network Social Diff.",
-  "b" = "(b) Cluster Association Network Social Diff.",
-  "c" = "(c) Grooming Nework Social Diff."
+  "a" = "(a) Roost Association Network",
+  "b" = "(b) Cluster Association Network",
+  "c" = "(c) Grooming Nework"
 )
 
 # Setup graph theme
@@ -55,5 +55,5 @@ ggplot() +
   geom_histogram(data = gather(merged_data, cols, value), aes(x = value), bins = 25, colour = "black", fill = "light blue") +
   geom_vline(data = Mean, aes(xintercept = value), color = "red", linetype = "dashed") +
   facet_wrap(.~cols, scales = "free", labeller = as_labeller(label),nrow = 1) +
-  xlab("Social Differentiation")
+  xlab("social differentiation")
 
