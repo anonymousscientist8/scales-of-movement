@@ -5,15 +5,15 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-pagerank_est0 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est0.csv") %>%
+pagerank_est0 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est5.csv") %>%
   mutate(label= "(a) individually variable rates of switching roost, cluster, and partner")
-pagerank_est1 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est1.csv") %>%
+pagerank_est1 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est6.csv") %>%
   mutate(label= "(b) individually variable rates of partner switching")
-pagerank_est2 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est2.csv") %>%
+pagerank_est2 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est7.csv") %>%
   mutate(label= "(c) individually variable rates of cluster switching")
-pagerank_est3 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est3.csv") %>%
+pagerank_est3 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est8.csv") %>%
   mutate(label= "(d) individually variable rates of roost switching")
-pagerank_est4 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est4.csv") %>%
+pagerank_est4 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est9.csv") %>%
   mutate(label= "(e) individually variable rates of switching that are correlated across types")
 
 # compile data
