@@ -5,15 +5,15 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-degree_est0 <- read.csv("filepath\\degree_estXX.csv") %>%
+degree_est0 <- read.csv("C:\\Users\\raven\\Documents\\degree_est5.csv") %>%
   mutate(label= "(a) individually variable rates of switching roost, cluster, and partner")
-degree_est1 <- read.csv("filepath\\degree_estXX.csv") %>%
+degree_est1 <- read.csv("C:\\Users\\raven\\Documents\\degree_est6.csv") %>%
   mutate(label= "(b) individually variable rates of roost switching")
-degree_est2 <- read.csv("filepath\\degree_estXX.csv") %>%
+degree_est2 <- read.csv("C:\\Users\\raven\\Documents\\degree_est7.csv") %>%
   mutate(label= "(c) individually variable rates of cluster switching")
-degree_est3 <- read.csv("filepath\\degree_estXX.csv") %>%
+degree_est3 <- read.csv("C:\\Users\\raven\\Documents\\degree_est8.csv") %>%
   mutate(label= "(d) individually variable rates of partner switching")
-degree_est4 <- read.csv("filepath\\degree_estXX.csv") %>%
+degree_est4 <- read.csv("C:\\Users\\raven\\Documents\\degree_est9.csv") %>%
   mutate(label= "(e) individually variable rates of switching that are correlated across types")
 
 # compile data
@@ -65,7 +65,7 @@ d %>%
   theme_bw() +
   theme(strip.text.x = element_text(angle = 0, hjust = 0)) +
   theme(legend.position = "none") +
-  xlab("Effect on grooming degree (standardized coefficient)") +
-  ylab("Standardized Coefficient") +
+  xlab("") +
+  ylab("effect on grooming degree (standardized coefficient)") +
   scale_color_manual(values= c("blue", "dark green", "red"))
 
