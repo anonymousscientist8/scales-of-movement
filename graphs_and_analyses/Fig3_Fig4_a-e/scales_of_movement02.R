@@ -9,7 +9,7 @@ library(tidyverse)
 degree_est <- data.frame(matrix(ncol=100,nrow=3))
 pagerank_est <- data.frame(matrix(ncol=100,nrow=3))
 
-for (a in 2100:2199) { # For the specified range
+for (a in 0000:0099) { # For the specified range
 print(a)
 # get raw data
 t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
@@ -140,13 +140,21 @@ bats %>%
 
 # Get coefficients from generalized linear model
 fit1 <- summary(glm(degree~ scale(rs)+ scale(cs)+ scale(ps), family = "poisson", data= bats))
+overdisp_fun <- function(model) { # Check for dispersion
+  rdf <- df.residual(model)
+  rp <- residuals(model,type="pearson")
+  Pearson.chisq <- sum(rp^2)
+  prat <- Pearson.chisq/rdf
+  pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+  c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+overdisp_fun(fit1)
 fit1 <- coefficients(fit1)
 fit1 <- data.frame(fit1) # Make into data frame
 degree_est[1,a-2100+1] <- fit1[2,1] # Get effects from roost switching 
 degree_est[2,a-2100+1] <- fit1[3,1] # Get effects from cluster switching
 degree_est[3,a-2100+1] <- fit1[4,1] # Get effects from partner switching
 rownames(degree_est) <- c('scale(rs)','scale(cs)','scale(ps)')
-
 
 # what predicts reverse pagerank centrality?
 bats %>% # Make basic test plots
@@ -170,3 +178,73 @@ pagerank_est[2,a-2100+1] <- fit2[3,1]
 pagerank_est[3,a-2100+1] <- fit2[4,1]
 rownames(pagerank_est) <- c('scale(rs)','scale(cs)','scale(ps)')
 }
+
+# Transpose the pagerank and degree estimates
+degree_est <- data.frame(t(degree_est))
+pagerank_est <- data.frame(t(pagerank_est))
+
+# Export as csv's
+write.csv(degree_est, "C:\\Users\\raven\\Documents\\degree_est21.csv")
+write.csv(pagerank_est, "C:\\Users\\raven\\Documents\\pagerank_est21.csv")
+
+# 
+for (i in 1:3) {
+  sdall <- rep(NA,500)
+  if (i == 1) {variation_in <- rep(NA,500)}
+  for (a in 0500:5099) {
+    # get raw data
+    t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+    sdall[a+1-500] <- sd(t[,i+1])
+    if (i == 1) {variation_in[a+1-500] <- "a"}
+  }
+  for (a in 1000:1099) {
+    # get raw data
+    t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+    sdall[a+1] <- sd(t[,i+1-500], na.rm = T)
+    if (i == 1) {variation_in[a+1-500] <- "b"}
+  }
+  for (a in 1100:1199) {
+    # get raw data
+    t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+    sdall[a+1] <- sd(t[,i+1-500], na.rm = T)
+    if (i == 1) {variation_in[a+1-500] <- "c"}
+  }
+  for (a in 1200:1299) {
+    # get raw data
+    t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+    sdall[a+1] <- sd(t[,i+1-500], na.rm = T)
+    if (i == 1) {variation_in[a+1-500] <- "d"}
+  }
+  for (a in 1300:1399) {
+    # get raw data
+    t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+    sdall[a+1] <- sd(t[,i+1-500], na.rm = T)
+    if (i == 1) {variation_in[a+1-500] <- "e"}
+  }
+  if (i == 1) {
+    sds <- cbind(variation_in,sdall)
+  } else {
+    sds <- cbind(sds,sdall)
+  }
+}
+sds <- data.frame(sds)
+sds$sdall <- as.numeric(as.character(sds$sdall))
+sds$sdall.1 <- as.numeric(as.character(sds$sdall.1))
+sds$sdall.2 <- as.numeric(as.character(sds$sdall.2))
+
+label <- c(
+  "a" = "(a) Variable, Uncorrelated Switching Rates",
+  "b" = "(b) Variable Roost Switching Rates",
+  "c" = "(c) Variable Cluster Switching Rates",
+  "d" = "(d) Variable Partner Switching Rates",
+  "e" = "(e) Variable, Correlated Switching Rates"
+)
+
+theme_new <- theme_set(theme_bw())
+theme_new <- theme_update(strip.background = element_blank(),strip.text = element_text(hjust = 0))
+
+
+ggplot(data = sds) +
+  geom_histogram(mapping = aes(x = sdall),colour = "black", fill = "light blue", position='identity') +
+  facet_wrap(~variation_in, ncol = 1, labeller = as_labeller(label)) +
+  xlab("standard deviations from mean roost switching count")
