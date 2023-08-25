@@ -53,41 +53,50 @@ ggplot(data = gd2, mapping =  aes(x = switch, y = groomed)) +
   geom_smooth(data = data.frame(gd2,z="c"), method = '')
 
 # Run permutation tests and get statistic metrics, relationship metrics
-model <- lm(centrality~roost_switch, data=centrality) # Get the roost switching linear model
+model <- lm(centrality~scale(roost_switch), data=centrality) # Get the roost switching linear model
 summary(model) # Look at statstics associated with the model
 root <- rep(0,1000) # Initialize vector
+rootb <- rep(0,1000) # Initialize vector
 for (i in 1:1000) { # Run 1000 permutations and find the R^2 value
   data2 <- centrality[sample(nrow(centrality),size = nrow(centrality),replace = T),]
-  root[i] <- summary(lm(centrality ~ roost_switch, data = data2))$r.squared
+  root[i] <- summary(lm(centrality ~ scale(roost_switch), data = data2))$r.squared
+  rootb[i] <- summary(lm(centrality ~ scale(roost_switch), data = data2))$coefficients[2]
 }
 quantile(root, probs = c(0.025,0.975)) # Find where 95% of the R^2 values lie
+quantile(rootb, probs = c(0.025,0.975)) # Find where 95% of the beta values lie
 lm(data.frame(scale(model$model))) # And observe more statistics
-model <- lm(n~cs, data=gd) # Get the cluster switching linear model
+model <- lm(n~scale(cs), data=gd) # Get the cluster switching linear model
 summary(model) # Look at statistics
 coot <- rep(0,1000) # Initialize vector
+cootb <- rep(0,1000)
 for (i in 1:1000) { # Run 1000 permutations and find the R^2 value
   data2 <- gd[sample(nrow(gd),size = nrow(gd),replace = T),]
-  coot[i] <- summary(lm(n ~ cs, data = data2))$r.squared
+  coot[i] <- summary(lm(n ~ scale(cs), data = data2))$r.squared
+  cootb[i] <- summary(lm(n ~ scale(cs), data = data2))$coefficients[2]
 }
 quantile(coot, probs = c(0.025,0.975)) # Find where 95% of the R^2 values lie
+quantile(cootb, probs = c(0.025,0.975)) # Find where 95% of the beta values lie
 lm(data.frame(scale(model$model))) # And observe more statistics
 model <- lm(n~ps, data=gd) # Get the partner switching linear model
 summary(model) # Look at statistics
 lm(data.frame(scale(model$model))) # And view more statistics
-model <- lm(n~ps2, data=gd)  # Get the within-cluster partner switching linear model
+model <- lm(n~scale(ps2), data=gd)  # Get the within-cluster partner switching linear model
 summary(model) # View statistics
 poot <- rep(0,1000) # Initialize vector
+pootb <- rep(0,1000)
 for (i in 1:1000) { # # Run 1000 permutations and find the R^2 value
   data2 <- gd[sample(nrow(gd),size = nrow(gd),replace = T),]
-  poot[i] <- summary(lm(n ~ ps2, data = data2))$r.squared
+  poot[i] <- summary(lm(n ~ scale(ps2), data = data2))$r.squared
+  pootb[i] <- summary(lm(n ~ scale(ps2), data = data2))$coefficients[2]
 }
 quantile(poot, probs = c(0.025,0.975)) # Find where 95% of the R^2 values lie
+quantile(pootb, probs = c(0.025,0.975)) # Find where 95% of the beta values lie
 lm(data.frame(scale(model$model))) # And observe more statistics
 # Get statistics for the relation between cluster switching and partner switching
 model <- lm(cs~ps, data=gd)
 summary(model)
 lm(data.frame(scale(model$model)))
-model <- lm(cs~ps2, data=gd)
+model <- lm(scale(cs)~scale(ps2), data=gd)
 summary(model)
 lm(data.frame(scale(model$model)))
 
