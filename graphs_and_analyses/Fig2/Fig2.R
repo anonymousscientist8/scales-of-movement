@@ -35,22 +35,22 @@ gd2$groomed <- as.numeric(gd2$groomed)
 
 # Graph label
 label <- c(
-  "a" = "Roost Switching (switches / day)",
-  "b" = "Cluster Switching (switches / day)",
-  "c" = "Partner Switching (switches / hour)"
+  "a" = "(a) Roost Switching (switches / day)",
+  "b" = "(b) Cluster Switching (switches / day)",
+  "c" = "(c) Partner Switching (switches / hour)"
 )
 
 # Graph theme
 theme_new <- theme_set(theme_bw())
-theme_new <- theme_update(strip.text = element_text(), strip.placement = "outside", axis.title.x=element_blank(), strip.background = element_blank())
+theme_new <- theme_update(legend.position = "none", strip.text = element_text(), strip.placement = "outside", axis.title.x=element_blank(), strip.background = element_blank())
 
 # Plot
-ggplot(data = gd2, mapping =  aes(x = switch, y = groomed)) + 
+ggplot(data = gd2, mapping =  aes(x = switch, y = groomed, color = type)) + 
   geom_point() +
   geom_smooth(method = 'lm') +
   ylab("Partners Groomed")  +
-  facet_wrap(~type, nrow = 1, scales = "free", strip.position = "bottom", labeller = as_labeller(label)) +
-  geom_smooth(data = data.frame(gd2,z="c"), method = '')
+  facet_wrap(~type, nrow = 1, scales = "free", strip.position = "bottom", labeller = as_labeller(label))
+
 
 # Run permutation tests and get statistic metrics, relationship metrics
 model <- lm(centrality~scale(roost_switch), data=centrality) # Get the roost switching linear model
