@@ -47,5 +47,6 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
     geom_vline(data = obs, aes(xintercept = value), color = "black", linetype = "solid") +
     facet_wrap(.~cols, scales = "fixed", labeller = as_labeller(label), nrow = 5, strip.position = "top") +
     xlab("social differentiation: expected (blue) vs observed (black)") +
+    geom_hline(yintercept = 0, color = "light blue") +
     ylab("frequency")+
     labs(subtitle = "Convergence of agent-based model with reference model shows that\nhierarchically embedded scales of movement creates false social differentiation"))
