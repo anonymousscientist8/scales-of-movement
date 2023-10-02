@@ -36,7 +36,8 @@ theme_new <- theme_update(strip.background = element_blank(),strip.text = elemen
 (plot <-
     ggplot() +
     geom_histogram(data = gather(d, cols, value), aes(x = value), binwidth = 0.001, colour = "light blue", fill = "light blue") +
+    geom_hline(yintercept = 0, color = "azure2") +
     geom_vline(data = obs, aes(xintercept = value), color = "black", linetype = "solid") +
-    facet_wrap(.~cols, scales = "fixed", labeller = as_labeller(label), nrow = 3, strip.position = "top") +
+    facet_wrap(.~cols, scales = "fixed", labeller = as_labeller(label), nrow = 1, strip.position = "top") +
     xlab("social differentiation: expected (blue) vs observed (black)") +
     ylab("frequency"))
