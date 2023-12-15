@@ -5,6 +5,8 @@ rm(list=ls())
 library(tidyverse)
 library(lme4)
 
+### Roost Switching
+
 # get roost switching data, filtering out all instances where with more than
 # 14 days since last switch
 d <- 
@@ -101,6 +103,8 @@ bat.days %>%
 
 # clear workspace
 rm(list=ls())
+
+### Cluster Switching
 
 # get cluster switching data
 d <- 
@@ -219,6 +223,8 @@ a <- data.frame(a)
 
 # save
 write.csv(bat.h, file= "cluster_switching_probs.csv")
+
+### Partner Switching
 
 # clear workspace
 rm(list=ls())
