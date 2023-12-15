@@ -5,15 +5,15 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-pagerank_est0 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est5.csv") %>%
+pagerank_est0 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est5.csv") %>% # Change to 0 if fig. S4, keep for S5
   mutate(label= "(a) individually variable rates of switching roost, cluster, and partner")
-pagerank_est1 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est6.csv") %>%
+pagerank_est1 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est6.csv") %>% # Change to 1 if fig. S4, keep for S5
   mutate(label= "(b) individually variable rates of partner switching")
-pagerank_est2 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est7.csv") %>%
+pagerank_est2 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est7.csv") %>% # Change to 2 if fig. S4, keep for S5
   mutate(label= "(c) individually variable rates of cluster switching")
-pagerank_est3 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est8.csv") %>%
+pagerank_est3 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est8.csv") %>% # Change to 3 if fig. S4, keep for S5
   mutate(label= "(d) individually variable rates of roost switching")
-pagerank_est4 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est9.csv") %>%
+pagerank_est4 <- read.csv("C:\\Users\\raven\\Documents\\pagerank_est9.csv") %>% # Change to 4 if fig. S4, keep for S5
   mutate(label= "(e) individually variable rates of switching that are correlated across types")
 
 # compile data
