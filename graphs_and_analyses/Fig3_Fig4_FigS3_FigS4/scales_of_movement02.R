@@ -184,5 +184,5 @@ degree_est <- data.frame(t(degree_est))
 pagerank_est <- data.frame(t(pagerank_est))
 
 # Export as csv's
-write.csv(degree_est, "C:\\Users\\raven\\Documents\\degree_est21.csv")
-write.csv(pagerank_est, "C:\\Users\\raven\\Documents\\pagerank_est21.csv")
+write.csv(degree_est, "C:\\Users\\raven\\Documents\\degree_est0.csv")
+write.csv(pagerank_est, "C:\\Users\\raven\\Documents\\pagerank_est0.csv")
