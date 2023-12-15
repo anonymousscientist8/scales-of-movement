@@ -1,9 +1,3 @@
-## Uses the interactions of captive vampire bats, collected by Imran Razik,
-## to determine partner switching duration and create a csv showing partner
-## switching events and the amount of time since last partner switch
-## Created by C. Raven A. Hartman
-## Last Modified: 11/4/2022
-
 # Load necessary packages and clear workspace
 library(tidyverse)
 library(stringi)
