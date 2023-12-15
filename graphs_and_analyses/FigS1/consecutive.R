@@ -19,7 +19,7 @@ for (i in 1:length(Bats_w)) {
   temp <- wilkinson[!(wilkinson$ID != Bats_w[i]),]
   obs_count[i] <- length(unique(temp$Date))
 }
-Bats_w <- Bats_w[obs_count > 25]
+Bats_w <- Bats_w[obs_count > 25] # Filter out bats with less than 25 observations
 
 # Convert date into something a little easier to work with
 wilkinson$Date <- as.numeric(as.POSIXlt(wilkinson$Date, format="%m/%d/%Y")) / 
