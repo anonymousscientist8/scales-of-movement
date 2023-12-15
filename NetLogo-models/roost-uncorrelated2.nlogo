@@ -1,14 +1,3 @@
-; This code uses a real probabilities of roost switching, partner switching, and cluster
-; switching in vampire bats to simulate the movement of vampire bats between roosts,
-; clusters, and grooming partners. The output of this model is a dataset showing
-; for each bat, the identities of every grooming recipient for each grooming event.
-; Additionally outputs the spaces (clusters, roosts) that each bat occupied every minute.
-; In this model, bats do not have correlated roost, cluster, and partner switching probabilities
-; so bats who are more likely to switch more frequently at one scale of movement don't necessarily
-; switch more frequently at the other scales.
-; Written by C. Raven A. Hartman
-; Last edited 11/16/2022
-
 ; Load extensions
 extensions
 [
@@ -135,13 +124,13 @@ to move
           set heading heading - 10
           set groom-log insert-item 0 groom-log (groom-choice) ; And update the grooming log
           ifelse ticks < 300
-          [
+          [ ; If before switch, mark the day
             set groom-log-time insert-item 0 groom-log-time (days-passed)
           ]
-          [
+          [ ; If after, mark the day and show that this is the roost position after
             set groom-log-time insert-item 0 groom-log-time (days-passed + 0.5)
           ]
-          set groom-log-roost insert-item 0 groom-log-roost (roost)
+          set groom-log-roost insert-item 0 groom-log-roost (roost) ; Mark the roost
         ]
         ; Otherwise
         ifelse member? groom-choice (turtles-here)
@@ -164,38 +153,38 @@ to move
               set last-groom groom-choice ; Then update the last groomed partner
               set groom-log insert-item 0 groom-log (groom-choice) ; as well as the grooming log
               ifelse ticks < 300
-              [
+              [ ; If before switch, mark the day
                 set groom-log-time insert-item 0 groom-log-time (days-passed)
               ]
-              [
+              [; If after, mark the day and show that this is the roost position after
                 set groom-log-time insert-item 0 groom-log-time (days-passed + 0.5)
               ]
-              set groom-log-roost insert-item 0 groom-log-roost (roost)
+              set groom-log-roost insert-item 0 groom-log-roost (roost) ; Mark the roost
             ]
             [ ; If there is no partner switch
               set heading heading - 10 ; Mark a groom event with no switch visually
               set groom-log insert-item 0 groom-log (groom-choice) ; And update the grooming log
               ifelse ticks < 300
-              [
+              [ ; If before switch, mark the day
                 set groom-log-time insert-item 0 groom-log-time (days-passed)
               ]
-              [
+              [ ; If after, mark the day and show that this is the roost position after
                 set groom-log-time insert-item 0 groom-log-time (days-passed + 0.5)
               ]
-              set groom-log-roost insert-item 0 groom-log-roost (roost)
+              set groom-log-roost insert-item 0 groom-log-roost (roost) ; Mark the roost
             ]
           ]
           [ ; If its only the focal bat and last chosen partner, cannot switch partners
             set heading heading - 10 ; Visual cue of grooming with no switch
             set groom-log insert-item 0 groom-log (groom-choice) ; Update grooming log
             ifelse ticks < 300
-            [
+            [ ; If before switch, mark the day
               set groom-log-time insert-item 0 groom-log-time (days-passed)
             ]
-            [
+            [ ; If after, mark the day and show that this is the roost position after
               set groom-log-time insert-item 0 groom-log-time (days-passed + 0.5)
             ]
-            set groom-log-roost insert-item 0 groom-log-roost (roost)
+            set groom-log-roost insert-item 0 groom-log-roost (roost) ; Mark the roost
           ]
         ]
         [ ; If the last groomed turtle has moved, there is a partner switch, but it's not counted
@@ -211,13 +200,13 @@ to move
           set last-groom groom-choice ; Update the last groomed bat
           set groom-log insert-item 0 groom-log (groom-choice) ; And the grooming log
           ifelse ticks < 300
-          [
+          [ ; If before switch, mark the day
             set groom-log-time insert-item 0 groom-log-time (days-passed)
           ]
-          [
+          [ ; If after, mark the day and show that this is the roost position after
             set groom-log-time insert-item 0 groom-log-time (days-passed + 0.5)
           ]
-          set groom-log-roost insert-item 0 groom-log-roost (roost)
+          set groom-log-roost insert-item 0 groom-log-roost (roost) ; Mark the roost
         ]
       ]
     ]
@@ -859,24 +848,27 @@ to setup
     setxy random-pxcor random-pycor ; Random starting patch
     let g matrix:dimensions roost-switch-matrix ; Get the dimensions of the roost switching matrix
     let b random (item 0 g) ; Choose a row
+    ; Set roost switching vectors
     ;set roost-switch-vector matrix:get-row  roost-switch-matrix b
     set roost-switch-vector matrix:get-row rs-mean-matrix 0
+    ; Set cluster switching vectors
     let h matrix:dimensions cluster-switch-matrix
     let c random (item 0 h)
     ;set cluster-switch-vector matrix:get-row cluster-switch-matrix c
     set cluster-switch-vector matrix:get-row cs-mean-matrix 0
+    ; Set partner switching vectors
     let f matrix:dimensions partner-switch-matrix
     let z random (item 0 f)
     ;set partner-switch-vector matrix:get-row partner-switch-matrix z
     set partner-switch-vector matrix:get-row ps-mean-matrix 0
-    move-to one-of patches with [(pcolor != orange) and (pcolor != black)]
-    set last-roost roost
-    set last-cluster cluster
-    set roost-choice roost
-    set cluster-choice cluster
-    set grooming-prob 0.0183854
-    set groom-choice 10000
-    set last-groom 10000
+    move-to one-of patches with [(pcolor != orange) and (pcolor != black)] ; Move to roost
+    set last-roost roost ; Mark roost
+    set last-cluster cluster ; Mark cluster
+    set roost-choice roost ; Mark partner
+    set cluster-choice cluster ; Mark cluster as the cluster choice
+    set grooming-prob 0.0183854 ; Mean probability of being groomed per minute
+    set groom-choice 10000 ; Arbitrary first choice (forces to switch)
+    set last-groom 10000 ; Arbitrary first choice (forces to switch)
   ]
   reset-ticks
 end
