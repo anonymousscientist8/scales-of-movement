@@ -1,14 +1,3 @@
-; This code uses a real probabilities of roost switching, partner switching, and cluster
-; switching in vampire bats to simulate the movement of vampire bats between roosts,
-; clusters, and grooming partners. The output of this model is a dataset showing
-; for each bat, the identities of every grooming recipient for each grooming event.
-; Additionally outputs the spaces (clusters, roosts) that each bat occupied every minute.
-; In this model, bats have correlated roost, cluster, and partner switching probabilities
-; so bats who are more likely to switch more frequently at one scale of movement also
-; switch more frequently at the other scales.
-; Written by C. Raven A. Hartman
-; Last edited 11/16/2022
-
 ; Load extensions
 extensions
 [
@@ -130,7 +119,7 @@ to move
           set heading heading + 10 ; Visually cue a partner changed grooming event
           set groom-choice one-of other turtles-here ; And groom a different turtle
           set last-groom groom-choice ; Update the last groomed individual
-          set heading heading - 10
+          set heading heading - 10 ; Denote a grooming event
           set groom-log insert-item 0 groom-log (groom-choice) ; And update the grooming log
         ]
         ; Otherwise
@@ -192,11 +181,11 @@ to move
     ]
   ]
   [
-    let last-roost-p last-roost
-    let last-cluster-p last-cluster
+    let last-roost-p last-roost ; Store the last roost locally
+    let last-cluster-p last-cluster ; Store the last cluster locally
     ; If returning to the roost
     if ticks = 401
-    [
+    [ ; While foraging
       ifelse p > roost-switch
       [ ; And if a roost switch isn't supposed to occur, move to the last roost and cluster occupied before feeding
         move-to one-of patches with ([roost = last-roost-p and cluster = last-cluster-p])
@@ -208,7 +197,7 @@ to move
         set roost-switch-count roost-switch-count + 1 ; add this to the count
         set days-switch 0 ; reset the days since last roost switch
         while [roost-choice = 0]
-        [
+        [ ; Until we have chosen a valid roost
           set roost-choice ((random 11) + 1) ; choose a new roost
           set cluster-choice ((random 4) + 1) ; and a random new cluster
           while [roost-choice = last-roost]
@@ -216,7 +205,7 @@ to move
             set roost-choice ((random 11) + 1)
           ]
         ]
-        let roost-choice-p roost-choice
+        let roost-choice-p roost-choice ; Reset the local variables
         let cluster-choice-p cluster-choice
         ; And move the bat back to the chosen roost
         move-to one-of patches with ([roost = roost-choice-p and cluster = cluster-choice-p])
@@ -495,11 +484,11 @@ to setup
   let d 0 ; Used for ID Number
   ask patch -4 3
   [
-    set specific d
-    set d d + 1
+    set specific d ; Set the universal ID
+    set d d + 1 ; Update the indexes
     set a a + 1
-    set roost a
-    set cluster 1
+    set roost a ; Set the roost ID
+    set cluster 1 ; Set the cluster ID
     set pcolor red ; alternating colors by 4x4 groups of patches to show different roosts clearly
   ]
   ask patch -4 2
