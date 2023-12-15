@@ -4,7 +4,6 @@
 ## which camera the bat was observed on, each pointing at distinct sections of
 ## the cage
 ## Code written by C. Raven A. Hartman
-## Last modified: 11/4/2022
 
 # Load packages and clear workspace
 library(tidyverse)
