@@ -1,9 +1,3 @@
-## This code analyzes Dr. Wilkinson's dataset on roosting choices of the common
-## vampire bat, marking all instances where at least one roost switch had to
-## have happened between any two observations of the wild bats
-## Code by C. Raven A. Hartmen
-## Last edited or formatted: 11/4/2022
-
 # Load packages and clear workspace
 library(tidyverse)
 rm(list = ls())
