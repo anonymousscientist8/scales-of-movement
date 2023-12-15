@@ -568,7 +568,696 @@ library(igraph)
 library(stringi)
 rm(list = ls())
 
-a <- sample(100:199,1)
+a_vec <- rep(0,50)
+p_vec <- rep(0,50)
+obs_vec <- rep(0,50)
+meanexp_vec <- rep(0,50)
+
+# Randomly select 5 different simulations of each type to test for social differentiation
+for (x in 1:50) {
+  if (x <= 5)
+  {
+    a <- sample(100:199, 1) # so picks a random test between 100 and 199
+  } else {
+    if (x <= 10) {
+      a <- sample(200:299, 1)
+    } else {
+      if (x <= 15) {
+        a <- sample(300:399, 1)
+      } else {
+        if (x <= 20) {
+          a <- sample(400:499, 1)
+        } else {
+          if (x <= 25) {
+            a <- sample(500:599, 1)
+          } else {
+            if (x <= 30) {
+              a <- sample(600:699, 1)
+            } else {
+              if (x <= 35) {
+                a <- sample(700:799, 1)
+              } else {
+                if (x <= 40) {
+                  a <- sample(800:899, 1)
+                } else {
+                  if (x <= 45) {
+                    a <- sample(900:999, 1)
+                  } else {
+                    a <- sample(0:99, 1)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  # Get the interactions
+  t <-
+    read.table(gsub(
+      ' ',
+      '',
+      paste(
+        'C:\\Users\\raven\\Documents\\interactions',
+        as.character(a),
+        '.csv'
+      )
+    ), sep = ',', fill = T)
+  # And associations
+  y <-
+    read.table(gsub(
+      ' ',
+      '',
+      paste(
+        'C:\\Users\\raven\\Documents\\associations',
+        as.character(a),
+        '.csv'
+      )
+    ), sep = ',', fill = T)
+  
+  # get bat attributes
+  bats <- t[, 1:4]
+  sort(bats$V1)
+  bats[, 1] <- paste0("bat", bats$V1)
+  
+  
+  # label bat attributes
+  #"So, the first column of both files I sent you should be the ID of the bats. The next column should be that bat's roost switching slope, then intercept, then cluster switching slope, then intercept, then partner switching slope and intercept."
+  colnames(bats) <- c("id", "rs", "cs", "ps")
+  
+  # get last column name
+  lastcol <- colnames(t)[ncol(t)]
+  
+  # get grooming events
+  d <-
+    # get grooming partners
+    t[, 5:ncol(t)] %>%
+    # add groomer
+    mutate(id = bats$id) %>%
+    # convert wide to long
+    pivot_longer(cols = V5:lastcol,
+                 names_to = "order",
+                 values_to = "partner") %>%
+    # label order of events
+    mutate(order = as.numeric(str_remove(order, "V"))) %>%
+    # start at 1 not 8
+    mutate(order = order - 4) %>%
+    # sort by bat and order of event
+    arrange(id, order) %>%
+    # delete parentheses in partner name
+    mutate(partner = str_replace_all(partner, pattern = "[()]", replacement = "")) %>%
+    # relabel turtles as bats
+    mutate(partner = str_replace_all(partner, pattern = "turtle ", replacement = "bat")) %>%
+    mutate(duration = 1) %>%
+    # delete NAs
+    filter(!is.na(partner))
+  
+  d <- d[!(d$partner == ""), ]
+  
+  # inspect events
+  unique(d$id)
+  unique(d$partner)
+  unique(d$order)
+  
+  # make grooming network-----
+  # summarize event data into an edgelist of directed interaction rates
+  el <-
+    d %>%
+    group_by(id, partner) %>%
+    summarize(duration = sum(duration)) %>%
+    ungroup()
+  
+  # convert the edgelist into a graph object
+  g <- graph_from_data_frame(el)
+  
+  # convert the graph into a sociomatrix
+  m <- as_adjacency_matrix(g, attr = 'duration', sparse = F)
+  
+  
+  # And find the coefficient of variation for the grooming matrix (social differentiation)
+  soc_diff <- rep(0, length(bats[, 1]))
+  n <- t(m)
+  for (i in 1:length(m[1, ])) {
+    soc_diff[i] <- sd(n[, i], na.rm = T) / mean(n[, i], na.rm = T)
+  }
+  soc_diff_avg <- mean(soc_diff, na.rm = T)
+  soc_diff <- data.frame(soc_diff)
+  
+  # Plot the social differentiation compared to the number of observations
+  soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
+  ggplot() +
+    geom_histogram(
+      data = soc_diff,
+      aes(x = soc_diff),
+      bins = 15,
+      colour = "black",
+      fill = "light blue"
+    ) +
+    geom_vline(aes(xintercept = soc_diff_avg),
+               color = "red",
+               linetype = "dashed") +
+    xlab("Social Differentiation")
+  
+  # Resample function
+  resample <- function(x, ...)
+    x[sample.int(length(x), ...)]
+  
+  psdm <- rep(0, 100)
+  for (i in 1:100) { # For each permutation test
+    d2 <- d # Same the data file
+    
+    # And add a column that denotes row number
+    d2 <- d2 %>%
+      mutate(original_row = row_number())
+    
+    permutations <- 10000
+    for (k in 1:permutations) {
+      # Select a random row
+      row_num1 <- sample(length(d2$partner), 1) # Select random row number
+      chosen_id1 <- d2$id[row_num1] # Pull out donor
+      chosen_partner1 <- d2$partner[row_num1] # Pull out recipient
+      d3 <- d2
+      row_num2 <- sample(d3$original_row, 1) # Select second row number
+      while ((d2$partner[row_num2] == chosen_id1) ||
+             d2$id[row_num2] == chosen_partner1) {
+        # Ensure groomers and donators aren't the same
+        row_num2 <- sample(d3$original_row, 1)
+      }
+      # Swap recipients
+      chosen_partner2 <- d2$partner[row_num2]
+      chosen_id2 <- d2$id[row_num2]
+      d2$partner[row_num1] <- chosen_partner2
+      d2$partner[row_num2] <- chosen_partner1
+    }
+    
+    # summarize event data into an edgelist of directed interaction rates
+    el <-
+      d2 %>%
+      group_by(id, partner) %>%
+      summarize(duration = sum(duration)) %>%
+      ungroup()
+    
+    # convert the edgelist into a graph object
+    g <- graph_from_data_frame(el)
+    
+    # convert the graph into a sociomatrix
+    m <- as_adjacency_matrix(g, attr = 'duration', sparse = F)
+    
+    # And find the coefficient of variation for the grooming matrix (social differentiation)
+    temp <- rep(0, length(bats[, 1]))
+    n <- t(m)
+    for (k in 1:length(m[1, ])) {
+      temp[k] <- sd(n[, k], na.rm = T) / mean(n[, k], na.rm = T)
+    }
+    temp <- mean(temp, na.rm = T)
+    temp <- data.frame(temp)
+    psdm[i] <- mean(temp$temp, na.rm = T)
+    show(i)
+  }
+  
+  # p-value
+  exp <- psdm
+  obs <- soc_diff_avg
+  p <- mean(exp >= obs)
+  a_vec[x] <- a
+  p_vec[x] <- p
+  obs_vec[x] <- obs
+  meanexp_vec[x] <- mean(exp)
+}
+
+# Graph of permutations and social differentiation score, with line showing observed differentiation
+data.frame(exp=exp, permutation = 1:length(exp)) %>%
+ggplot() + 
+  geom_histogram(aes(x = exp), bins = 20, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = obs), color = "red", linetype = "dashed") +
+  xlab("Social Differentiation")
+
+###############################################
+# Fig 6 plot
+library(asnipe)
+library(tidyverse)
+library(igraph)
+library(stringi)
+rm(list = ls())
+
+a <- 2600
+t1 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+t2 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-roost',as.character(a),'.csv')), sep = ',', fill = T)
+t3 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-time',as.character(a),'.csv')), sep = ',', fill = T)
+t1 <- t1[order(t1$V1),]
+t2 <- t2[order(t2$V1),]
+t3 <- t3[order(t3$V1),]
+
+# get bat attributes
+bats <- t1[,1:4]
+sort(bats$V1)
+bats[,1] <- paste0("bat", bats$V1)
+
+
+# label bat attributes
+#"So, the first column of both files I sent you should be the ID of the bats. The next column should be that bat's roost switching slope, then intercept, then cluster switching slope, then intercept, then partner switching slope and intercept."
+colnames(bats) <- c("id", "rs", "cs", "ps")
+
+# get last column name
+lastcol <- colnames(t1)[ncol(t1)]
+
+# get grooming events
+d <- data.frame()
+n <- 0
+for (j in 1:length(t1[,1])) {
+  for (i in 5:length(t1[1,])) {
+    n <- n + 1
+    d[n,1] <- t1[j,1]
+    d[n,2] <- t1[j,i]
+    d[n,3] <- t2[j,i]
+    d[n,4] <- t3[j,i]
+    d[n,5] <- 1
+  }
+}
+colnames(d) <- c('id','partner','roost','day','duration')
+d <- d %>%
+  # delete parentheses in partner name
+  mutate(partner= str_replace_all(partner, pattern= "[()]", replacement= "")) %>% 
+  # relabel turtles as bats
+  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat"))
+d$id <- paste0("bat", d$id)
+d <- d[!(d$partner == ""),]
+
+# Create the group column
+# if generating c
+d$group <- paste(d$day/24, d$roost/4, sep = "_")
+# if generating b
+#d$group <- paste(floor(d$day), ceiling(d$roost/4), sep = "_")
+# if generating a
+#d$group <- 1
+
+# make grooming network-----
+# summarize event data into an edgelist of directed interaction rates
+el <- 
+  d %>% 
+  group_by(id, partner) %>% 
+  summarize(duration= sum(duration)) %>% 
+  ungroup()
+
+# convert the edgelist into a graph object
+g <- graph_from_data_frame(el)
+
+# convert the graph into a sociomatrix
+m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+
+
+# And find the coefficient of variation for the grooming matrix (social differentiation)
+soc_diff <- rep(0,length(bats[,1]))
+n <- t(m)
+for (i in 1:length(m[1,])) {
+  soc_diff[i] <- sd(n[,i], na.rm = T)/mean(n[,i], na.rm = T)
+}
+soc_diff_avg <- mean(soc_diff,na.rm = T)
+soc_diff <- data.frame(soc_diff)
+
+# Plot the social differentiation compared to the number of observations
+soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
+ggplot() + 
+  geom_histogram(data = soc_diff, aes(x = soc_diff), bins = 15, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = soc_diff_avg), color = "red", linetype = "dashed") +
+  xlab("Social Differentiation")
+
+
+resample <- function(x, ...)
+  x[sample.int(length(x), ...)]
+
+psdm <- rep(0, 100) # For permutation test social differentiation
+for (i in 1:100) {
+  d2 <- d
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
+  
+  all_groups <- unique(d2$group) # Get all unique groups
+  
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Select row number
+    chosen_id1 <- d2$id[row_num1] # Pull out donor
+    chosen_partner1 <- d2$partner[row_num1] # pull out recipient
+    chosen_group1 <- d2$group[row_num1] # pull out group
+    d3 <- d2[d2$group == chosen_group1,] # filter so we only care about the group in question
+    row_num2 <- sample(d3$original_row,1) # sample a new row in that subsection
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Keep resampling until the groomers and recipients are not the same (can't groom self)
+      row_num2 <- sample(d3$original_row,1)
+    }
+    # then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
+  }
+  
+  # Make edge list
+  el <-
+    d2 %>%
+    group_by(id, partner) %>%
+    summarize(duration = sum(duration)) %>%
+    ungroup()
+  
+  # convert the edgelist into a graph object
+  g <- graph_from_data_frame(el)
+  
+  # convert the graph into a sociomatrix
+  m <- as_adjacency_matrix(g, attr = 'duration', sparse = F)
+  
+  # And find the coefficient of variation for the grooming matrix (social differentiation)
+  temp <- rep(0, length(bats[, 1]))
+  n <- t(m)
+  for (k in 1:length(m[1, ])) {
+    temp[k] <- sd(n[, k], na.rm = T) / mean(n[, k], na.rm = T)
+  }
+  temp <- mean(temp, na.rm = T)
+  temp <- data.frame(temp)
+  psdm[i] <- mean(temp$temp, na.rm = T)
+  show(i)
+}
+
+# p-value
+exp <- psdm
+obs <- soc_diff_avg
+p <- mean(exp>=obs)
+p
+
+exp <- data.frame(exp)
+obs2600c <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp2600c.csv")
+
+# Graph of permutations and social differentiation score, with line showing observed differentiation
+data.frame(exp=exp, permutation = 1:length(exp)) %>%
+  ggplot() + 
+  geom_histogram(aes(x = exp), bins = 100, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = obs), color = "red", linetype = "dashed") +
+  xlab("Social Differentiation")
+
+# Export observation data
+obs <- data.frame(c(obs2600a,obs2600a,obs2600a))
+colnames(obs) <- "obs"
+write.csv(obs, "C:\\Users\\raven\\Documents\\obs2.csv")
+
+#########################
+# For creating plot 6
+
+## Randomly selected base simulation
+library(asnipe)
+library(tidyverse)
+library(igraph)
+library(stringi)
+rm(list = ls())
+
+a <- 548
+t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+
+# get bat attributes
+bats <- t[,1:4]
+sort(bats$V1)
+bats[,1] <- paste0("bat", bats$V1)
+
+
+# label bat attributes
+#"So, the first column of both files I sent you should be the ID of the bats. The next column should be that bat's roost switching slope, then intercept, then cluster switching slope, then intercept, then partner switching slope and intercept."
+colnames(bats) <- c("id", "rs", "cs", "ps")
+
+# get last column name
+lastcol <- colnames(t)[ncol(t)]
+
+# get grooming events
+d <- 
+  # get grooming partners
+  t[,5:ncol(t)] %>% 
+  # add groomer
+  mutate(id= bats$id) %>% 
+  # convert wide to long
+  pivot_longer(cols= V5:lastcol, names_to= "order", values_to= "partner") %>% 
+  # label order of events
+  mutate(order= as.numeric(str_remove(order, "V"))) %>% 
+  # start at 1 not 8
+  mutate(order= order -4) %>% 
+  # sort by bat and order of event
+  arrange(id, order) %>% 
+  # delete parentheses in partner name
+  mutate(partner= str_replace_all(partner, pattern= "[()]", replacement= "")) %>% 
+  # relabel turtles as bats
+  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat")) %>% 
+  mutate(duration= 1) %>% 
+  # delete NAs
+  filter(!is.na(partner))
+
+d <- d[!(d$partner == ""),]
+
+# inspect events
+unique(d$id)
+unique(d$partner)
+unique(d$order)
+
+# make grooming network-----
+# summarize event data into an edgelist of directed interaction rates
+el <- 
+  d %>% 
+  group_by(id, partner) %>% 
+  summarize(duration= sum(duration)) %>% 
+  ungroup()
+
+# convert the edgelist into a graph object
+g <- graph_from_data_frame(el)
+
+# convert the graph into a sociomatrix
+m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+
+
+# And find the coefficient of variation for the grooming matrix (social differentiation)
+soc_diff <- rep(0,length(bats[,1]))
+n <- t(m)
+for (i in 1:length(m[1,])) {
+  soc_diff[i] <- sd(n[,i], na.rm = T)/mean(n[,i], na.rm = T)
+}
+soc_diff_avg <- mean(soc_diff,na.rm = T)
+soc_diff <- data.frame(soc_diff)
+
+# Plot the social differentiation compared to the number of observations
+soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
+ggplot() + 
+  geom_histogram(data = soc_diff, aes(x = soc_diff), bins = 15, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = soc_diff_avg), color = "red", linetype = "dashed") +
+  xlab("Social Differentiation")
+
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
+# Permutation test (randomize within cage, because I don't know who is in what cluster)
+psdm <- rep(0,100)
+for (i in 1:100) {
+  d2 <- d
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
+  
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Find the row number
+    chosen_id1 <- d2$id[row_num1] # Find the ID of the donor
+    chosen_partner1 <- d2$partner[row_num1] # Find the ID of the recipient
+    d3 <- d2 # Store a backup
+    row_num2 <- sample(d3$original_row,1) # Sample a second row
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Continue to resample until neither partner matches either recipient
+      row_num2 <- sample(d3$original_row,1)
+    }
+    # Then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
+  }
+  
+  # summarize event data into an edgelist of directed interaction rates
+  el <- 
+    d2 %>% 
+    group_by(id, partner) %>% 
+    summarize(duration= sum(duration)) %>% 
+    ungroup()
+  
+  # convert the edgelist into a graph object
+  g <- graph_from_data_frame(el)
+  
+  # convert the graph into a sociomatrix
+  m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+  
+  # And find the coefficient of variation for the grooming matrix (social differentiation)
+  temp <- rep(0,length(bats[,1]))
+  n <- t(m)
+  for (k in 1:length(m[1,])) {
+    temp[k] <- sd(n[,k], na.rm = T)/mean(n[,k], na.rm = T)
+  }
+  temp <- mean(temp,na.rm = T)
+  temp <- data.frame(temp)
+  psdm[i] <- mean(temp$temp, na.rm = T)
+  show(i)
+}
+
+# p-value
+exp <- psdm
+obs <- soc_diff_avg
+p <- mean(exp>=obs)
+p
+
+# Export this as a data frame
+exp <- data.frame(exp)
+obs548 <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp548.csv")
+
+
+## Remove Hierarchically Embedded Scales of Movement
+a <- 2400
+t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+
+# get bat attributes
+bats <- t[,1:4]
+sort(bats$V1)
+bats[,1] <- paste0("bat", bats$V1)
+
+
+# label bat attributes
+#"So, the first column of both files I sent you should be the ID of the bats. The next column should be that bat's roost switching slope, then intercept, then cluster switching slope, then intercept, then partner switching slope and intercept."
+colnames(bats) <- c("id", "rs", "cs", "ps")
+
+# get last column name
+lastcol <- colnames(t)[ncol(t)]
+
+# get grooming events
+d <- 
+  # get grooming partners
+  t[,5:ncol(t)] %>% 
+  # add groomer
+  mutate(id= bats$id) %>% 
+  # convert wide to long
+  pivot_longer(cols= V5:lastcol, names_to= "order", values_to= "partner") %>% 
+  # label order of events
+  mutate(order= as.numeric(str_remove(order, "V"))) %>% 
+  # start at 1 not 8
+  mutate(order= order -4) %>% 
+  # sort by bat and order of event
+  arrange(id, order) %>% 
+  # delete parentheses in partner name
+  mutate(partner= str_replace_all(partner, pattern= "[()]", replacement= "")) %>% 
+  # relabel turtles as bats
+  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat")) %>% 
+  mutate(duration= 1) %>% 
+  # delete NAs
+  filter(!is.na(partner))
+
+d <- d[!(d$partner == ""),]
+
+# inspect events
+unique(d$id)
+unique(d$partner)
+unique(d$order)
+
+# make grooming network-----
+# summarize event data into an edgelist of directed interaction rates
+el <- 
+  d %>% 
+  group_by(id, partner) %>% 
+  summarize(duration= sum(duration)) %>% 
+  ungroup()
+
+# convert the edgelist into a graph object
+g <- graph_from_data_frame(el)
+
+# convert the graph into a sociomatrix
+m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+
+
+# And find the coefficient of variation for the grooming matrix (social differentiation)
+soc_diff <- rep(0,length(bats[,1]))
+n <- t(m)
+for (i in 1:length(m[1,])) {
+  soc_diff[i] <- sd(n[,i], na.rm = T)/mean(n[,i], na.rm = T)
+}
+soc_diff_avg <- mean(soc_diff,na.rm = T)
+soc_diff <- data.frame(soc_diff)
+
+# Plot the social differentiation compared to the number of observations
+soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
+ggplot() + 
+  geom_histogram(data = soc_diff, aes(x = soc_diff), bins = 15, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = soc_diff_avg), color = "red", linetype = "dashed") +
+  xlab("Social Differentiation")
+
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
+# Permutation test (randomize within cage, because I don't know who is in what cluster)
+psdm <- rep(0,100)
+for (i in 1:100) {
+  d2 <- d
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
+  
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Find the row number
+    chosen_id1 <- d2$id[row_num1] # Find the ID of the donor
+    chosen_partner1 <- d2$partner[row_num1] # Find the ID of the recipient
+    d3 <- d2 # Store a backup
+    row_num2 <- sample(d3$original_row,1) # Sample a second row
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Continue to resample until neither partner matches either recipient
+      row_num2 <- sample(d3$original_row,1)
+    }
+    # Then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
+  }
+  
+  # summarize event data into an edgelist of directed interaction rates
+  el <- 
+    d2 %>% 
+    group_by(id, partner) %>% 
+    summarize(duration= sum(duration)) %>% 
+    ungroup()
+  
+  # convert the edgelist into a graph object
+  g <- graph_from_data_frame(el)
+  
+  # convert the graph into a sociomatrix
+  m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+  
+  # And find the coefficient of variation for the grooming matrix (social differentiation)
+  temp <- rep(0,length(bats[,1]))
+  n <- t(m)
+  for (k in 1:length(m[1,])) {
+    temp[k] <- sd(n[,k], na.rm = T)/mean(n[,k], na.rm = T)
+  }
+  temp <- mean(temp,na.rm = T)
+  temp <- data.frame(temp)
+  psdm[i] <- mean(temp$temp, na.rm = T)
+  show(i)
+}
+
+# p-value
+exp <- psdm
+obs <- soc_diff_avg
+p <- mean(exp>=obs)
+p
+
+# Export this as a data frame
+exp <- data.frame(exp)
+obs2400 <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp2400.csv")
+
+## Remove individual variation in partner switching
+a <- 2401
 t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
 y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
@@ -651,47 +1340,26 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
-  possible <- length(d2$partner)
-  possible_partners <- d2$partner
-  assigned_partners <- vector("character", length = length(d2$id))
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
   
-  # Iterate over d2$id
-  for (j in 1:length(d2$id)) {
-    id_check <- 0
-    remaining_options <- which(possible_partners != 0)
-    
-    # Check if all remaining options are the same as d2$id[j]
-    if (length(remaining_options) == 0 || all(possible_partners[remaining_options] == d2$id[j])) {
-      # Select random partner from assigned_partners, excluding the last entry
-      available_partners <- assigned_partners[1:(j-1)]
-      partner_idx <- sample(length(available_partners), 1)
-      id_check <- available_partners[partner_idx]
-      
-      # Swap the selected partner with the remaining unassigned entry, if they are not the same
-      if (id_check != d2$id[j] && d2$id[partner_idx] != d2$partner[partner_idx]) {
-        assigned_partners[partner_idx] <- d2$id[j]
-        d2$partner[partner_idx] <- d2$id[j]
-        d2$partner[j] <- id_check
-      } else {
-        d2$partner[j] <- id_check
-      }
-    } else {
-      while (id_check == 0 || identical(id_check, d2$id[j])) { # While we haven't found a valid partner
-        remaining_options <- which(possible_partners != 0) # Look at remaining options
-        
-        # If there are no more remaining options, break the while loop
-        if (length(remaining_options) == 0 || all(possible_partners[remaining_options] == d2$id[j])) {
-          break
-        }
-        
-        row_num <- sample(remaining_options, 1) # Pick a random row
-        id_check <- possible_partners[row_num] # And store the associated bat for checks
-      }
-      
-      possible_partners[row_num] <- 0 # Remove assigned partner from list of potentials
-      assigned_partners[j] <- id_check # Mark the assigned partner
-      d2$partner[j] <- id_check # Set the new value
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Find the row number
+    chosen_id1 <- d2$id[row_num1] # Find the ID of the donor
+    chosen_partner1 <- d2$partner[row_num1] # Find the ID of the recipient
+    d3 <- d2 # Store a backup
+    row_num2 <- sample(d3$original_row,1) # Sample a second row
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Continue to resample until neither partner matches either recipient
+      row_num2 <- sample(d3$original_row,1)
     }
+    # Then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
   }
   
   # summarize event data into an edgelist of directed interaction rates
@@ -725,31 +1393,18 @@ obs <- soc_diff_avg
 p <- mean(exp>=obs)
 p
 
-# Graph of permutations and social differentiation score, with line showing observed differentiation
-data.frame(exp=exp, permutation = 1:length(exp)) %>%
-ggplot() + 
-  geom_histogram(aes(x = exp), bins = 20, colour = "black", fill = "light blue") +
-  geom_vline(aes(xintercept = obs), color = "red", linetype = "dashed") +
-  xlab("Social Differentiation")
+# Export this as a data frame
+exp <- data.frame(exp)
+obs2401 <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp2401.csv")
 
-
-###############################################
-library(asnipe)
-library(tidyverse)
-library(igraph)
-library(stringi)
-rm(list = ls())
-
-a <- 2404
-t1 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-t2 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-roost',as.character(a),'.csv')), sep = ',', fill = T)
-t3 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-time',as.character(a),'.csv')), sep = ',', fill = T)
-t1 <- t1[order(t1$V1),]
-t2 <- t2[order(t2$V1),]
-t3 <- t3[order(t3$V1),]
+## Remove byproduct partner fidelity
+a <- 2402
+t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
-bats <- t1[,1:4]
+bats <- t[,1:4]
 sort(bats$V1)
 bats[,1] <- paste0("bat", bats$V1)
 
@@ -759,32 +1414,36 @@ bats[,1] <- paste0("bat", bats$V1)
 colnames(bats) <- c("id", "rs", "cs", "ps")
 
 # get last column name
-lastcol <- colnames(t1)[ncol(t1)]
+lastcol <- colnames(t)[ncol(t)]
 
 # get grooming events
-d <- data.frame()
-n <- 0
-for (j in 1:length(t1[,1])) {
-  for (i in 5:length(t1[1,])) {
-    n <- n + 1
-    d[n,1] <- t1[j,1]
-    d[n,2] <- t1[j,i]
-    d[n,3] <- t2[j,i]
-    d[n,4] <- t3[j,i]
-    d[n,5] <- 1
-  }
-}
-colnames(d) <- c('id','partner','roost','day','duration')
-d <- d %>%
+d <- 
+  # get grooming partners
+  t[,5:ncol(t)] %>% 
+  # add groomer
+  mutate(id= bats$id) %>% 
+  # convert wide to long
+  pivot_longer(cols= V5:lastcol, names_to= "order", values_to= "partner") %>% 
+  # label order of events
+  mutate(order= as.numeric(str_remove(order, "V"))) %>% 
+  # start at 1 not 8
+  mutate(order= order -4) %>% 
+  # sort by bat and order of event
+  arrange(id, order) %>% 
   # delete parentheses in partner name
   mutate(partner= str_replace_all(partner, pattern= "[()]", replacement= "")) %>% 
   # relabel turtles as bats
-  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat"))
-d$id <- paste0("bat", d$id)
+  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat")) %>% 
+  mutate(duration= 1) %>% 
+  # delete NAs
+  filter(!is.na(partner))
+
 d <- d[!(d$partner == ""),]
 
-# Create the group column
-d$group <- paste(d$day, d$roost, sep = "_")
+# inspect events
+unique(d$id)
+unique(d$partner)
+unique(d$order)
 
 # make grooming network-----
 # summarize event data into an edgelist of directed interaction rates
@@ -817,95 +1476,55 @@ ggplot() +
   geom_vline(aes(xintercept = soc_diff_avg), color = "red", linetype = "dashed") +
   xlab("Social Differentiation")
 
+resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-resample <- function(x, ...)
-  x[sample.int(length(x), ...)]
-
-psdm <- rep(0, 100) # For permutation test social differentiation
+# Permutation test, made with the assistance of ChatGPT
+psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
   
-  all_groups <- unique(d2$group) # Get all unique groups
-  
-  for (k in 1:length(all_groups)) { # For all groups
-    possible <- length(d2$partner[d2$group == all_groups[k]]) # Find the number of possible partners
-    possible_partners <- d2$partner[d2$group == all_groups[k]] # Find all possible partners
-    assigned_partners <-
-      vector("character", length = length(d2$id[d2$group == all_groups[k]])) # Stores already used partners
-    for (j in 1:length(d2$id[d2$group == all_groups[k]])) { # For all bats in a group
-      id_check <- 0
-      remaining_options <- which(possible_partners != 0) # Find all remaining options
-      
-      # Check if all remaining options are the same as d2$id[j]
-      temp <- d2$id[d2$group == all_groups[k]] # Filter id to the correct group
-      temp2 <- d2$partner[d2$group == all_groups[k]] # Filter partner to the correct group
-      if (length(remaining_options) == 0 ||
-          all(possible_partners[remaining_options] == temp[j])) { # If we don't have any remaining options
-        # Select random partner from assigned_partners, excluding the last entry
-        available_partners <- assigned_partners[1:(j - 1)]
-        partner_idx <- sample(length(available_partners), 1)
-        id_check <- available_partners[partner_idx]
-        
-        # Swap the selected partner with the remaining unassigned entry, if they are not the same
-        while (id_check == temp[j] || temp[partner_idx] == temp2[j]) {
-          partner_idx <- sample(length(available_partners), 1)
-          id_check <- available_partners[partner_idx]
-        }
-        assigned_partners[partner_idx] <- temp[j] # Store the assigned partner
-        group_condition <- d2$group == all_groups[k]
-        partner_column <- d2$partner[group_condition] # Get all partners following the group conditional
-        id_column <- d2$id[group_condition] # Do the same with id
-        partner_column[j] <- id_check # Store the new partner
-        partner_column[partner_idx] <- temp2[j] # Flipping with the old one
-        d2$partner[group_condition] <- partner_column # Then put back into data frame
-        if (any(d2$partner == d2$id & d2$group == all_groups[k])) {
-          print("divider")
-          print(partner_column[j])
-          print(id_column[j])
-          print(partner_column[partner_idx])
-          print(id_column[partner_idx])
-        }
-      } else {
-        while (id_check == 0 || identical(id_check, temp[j])) {
-          # If out of options, break
-          if (length(remaining_options) == 0 ||
-              all(possible_partners[remaining_options] == temp[j])) {
-            break
-          }
-          
-          row_num <- sample(remaining_options, 1) # Resample row number
-          id_check <- possible_partners[row_num] # Resample partners and check if its the same as id
-        }
-        possible_partners[row_num] <- 0 # Update possible partners
-        assigned_partners[j] <- id_check # Update assigned partners
-        group_condition <- d2$group == all_groups[k]
-        partner_column <- d2$partner[group_condition] # Make partner_column all partners that follow the group condition
-        partner_column[j] <- id_check # Update partner
-        d2$partner[group_condition] <- partner_column # And store in data frame
-      }
+  # Iterate over d2$id
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Find the row number
+    chosen_id1 <- d2$id[row_num1] # Find the ID of the donor
+    chosen_partner1 <- d2$partner[row_num1] # Find the ID of the recipient
+    d3 <- d2 # Store a backup
+    row_num2 <- sample(d3$original_row,1) # Sample a second row
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Continue to resample until neither partner matches either recipient
+      row_num2 <- sample(d3$original_row,1)
     }
+    # Then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
   }
   
-  # Make edge list
-  el <-
-    d2 %>%
-    group_by(id, partner) %>%
-    summarize(duration = sum(duration)) %>%
+  # summarize event data into an edgelist of directed interaction rates
+  el <- 
+    d2 %>% 
+    group_by(id, partner) %>% 
+    summarize(duration= sum(duration)) %>% 
     ungroup()
   
   # convert the edgelist into a graph object
   g <- graph_from_data_frame(el)
   
   # convert the graph into a sociomatrix
-  m <- as_adjacency_matrix(g, attr = 'duration', sparse = F)
+  m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
   
   # And find the coefficient of variation for the grooming matrix (social differentiation)
-  temp <- rep(0, length(bats[, 1]))
+  temp <- rep(0,length(bats[,1]))
   n <- t(m)
-  for (k in 1:length(m[1, ])) {
-    temp[k] <- sd(n[, k], na.rm = T) / mean(n[, k], na.rm = T)
+  for (k in 1:length(m[1,])) {
+    temp[k] <- sd(n[,k], na.rm = T)/mean(n[,k], na.rm = T)
   }
-  temp <- mean(temp, na.rm = T)
+  temp <- mean(temp,na.rm = T)
   temp <- data.frame(temp)
   psdm[i] <- mean(temp$temp, na.rm = T)
   show(i)
@@ -917,19 +1536,155 @@ obs <- soc_diff_avg
 p <- mean(exp>=obs)
 p
 
+# Export this as a data frame
 exp <- data.frame(exp)
-obs2404 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2404.csv")
+obs2402 <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp2402.csv")
 
-# Graph of permutations and social differentiation score, with line showing observed differentiation
-data.frame(exp=exp, permutation = 1:length(exp)) %>%
-  ggplot() + 
-  geom_histogram(aes(x = exp), bins = 100, colour = "black", fill = "light blue") +
-  geom_vline(aes(xintercept = obs), color = "red", linetype = "dashed") +
+## Most simplified simulation
+a <- 2403
+t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+
+# get bat attributes
+bats <- t[,1:4]
+sort(bats$V1)
+bats[,1] <- paste0("bat", bats$V1)
+
+
+# label bat attributes
+#"So, the first column of both files I sent you should be the ID of the bats. The next column should be that bat's roost switching slope, then intercept, then cluster switching slope, then intercept, then partner switching slope and intercept."
+colnames(bats) <- c("id", "rs", "cs", "ps")
+
+# get last column name
+lastcol <- colnames(t)[ncol(t)]
+
+# get grooming events
+d <- 
+  # get grooming partners
+  t[,5:ncol(t)] %>% 
+  # add groomer
+  mutate(id= bats$id) %>% 
+  # convert wide to long
+  pivot_longer(cols= V5:lastcol, names_to= "order", values_to= "partner") %>% 
+  # label order of events
+  mutate(order= as.numeric(str_remove(order, "V"))) %>% 
+  # start at 1 not 8
+  mutate(order= order -4) %>% 
+  # sort by bat and order of event
+  arrange(id, order) %>% 
+  # delete parentheses in partner name
+  mutate(partner= str_replace_all(partner, pattern= "[()]", replacement= "")) %>% 
+  # relabel turtles as bats
+  mutate(partner= str_replace_all(partner, pattern= "turtle ", replacement= "bat")) %>% 
+  mutate(duration= 1) %>% 
+  # delete NAs
+  filter(!is.na(partner))
+
+d <- d[!(d$partner == ""),]
+
+# inspect events
+unique(d$id)
+unique(d$partner)
+unique(d$order)
+
+# make grooming network-----
+# summarize event data into an edgelist of directed interaction rates
+el <- 
+  d %>% 
+  group_by(id, partner) %>% 
+  summarize(duration= sum(duration)) %>% 
+  ungroup()
+
+# convert the edgelist into a graph object
+g <- graph_from_data_frame(el)
+
+# convert the graph into a sociomatrix
+m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+
+
+# And find the coefficient of variation for the grooming matrix (social differentiation)
+soc_diff <- rep(0,length(bats[,1]))
+n <- t(m)
+for (i in 1:length(m[1,])) {
+  soc_diff[i] <- sd(n[,i], na.rm = T)/mean(n[,i], na.rm = T)
+}
+soc_diff_avg <- mean(soc_diff,na.rm = T)
+soc_diff <- data.frame(soc_diff)
+
+# Plot the social differentiation compared to the number of observations
+soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
+ggplot() + 
+  geom_histogram(data = soc_diff, aes(x = soc_diff), bins = 15, colour = "black", fill = "light blue") +
+  geom_vline(aes(xintercept = soc_diff_avg), color = "red", linetype = "dashed") +
   xlab("Social Differentiation")
 
-# Export observation data
-obs <- data.frame(c(obs548,obs2404,obs2405))
-colnames(obs) <- "obs"
-write.csv(obs, "C:\\Users\\raven\\Documents\\obs2.csv")
+resample <- function(x, ...) x[sample.int(length(x), ...)]
 
+# Permutation test (randomize within cage, because I don't know who is in what cluster)
+psdm <- rep(0,100)
+for (i in 1:100) {
+  d2 <- d
+  d2 <- d2 %>%
+    mutate(original_row = row_number())
+  
+  # Iterate over d2$id
+  permutations <- 100000
+  for (k in 1:permutations) {
+    # Select a random row
+    row_num1 <- sample(length(d2$partner),1) # Find the row number
+    chosen_id1 <- d2$id[row_num1] # Find the ID of the donor
+    chosen_partner1 <- d2$partner[row_num1] # Find the ID of the recipient
+    d3 <- d2 # Store a backup
+    row_num2 <- sample(d3$original_row,1) # Sample a second row
+    while ((d2$partner[row_num2] == chosen_id1) || d2$id[row_num2] == chosen_partner1) {
+      # Continue to resample until neither partner matches either recipient
+      row_num2 <- sample(d3$original_row,1)
+    }
+    # Then swap partners
+    chosen_partner2 <- d2$partner[row_num2]
+    chosen_id2 <- d2$id[row_num2]
+    d2$partner[row_num1] <- chosen_partner2
+    d2$partner[row_num2] <- chosen_partner1
+  }
+  
+  # summarize event data into an edgelist of directed interaction rates
+  el <- 
+    d2 %>% 
+    group_by(id, partner) %>% 
+    summarize(duration= sum(duration)) %>% 
+    ungroup()
+  
+  # convert the edgelist into a graph object
+  g <- graph_from_data_frame(el)
+  
+  # convert the graph into a sociomatrix
+  m <- as_adjacency_matrix(g, attr= 'duration', sparse=F)
+  
+  # And find the coefficient of variation for the grooming matrix (social differentiation)
+  temp <- rep(0,length(bats[,1]))
+  n <- t(m)
+  for (k in 1:length(m[1,])) {
+    temp[k] <- sd(n[,k], na.rm = T)/mean(n[,k], na.rm = T)
+  }
+  temp <- mean(temp,na.rm = T)
+  temp <- data.frame(temp)
+  psdm[i] <- mean(temp$temp, na.rm = T)
+  show(i)
+}
+
+# p-value
+exp <- psdm
+obs <- soc_diff_avg
+p <- mean(exp>=obs)
+p
+
+# Export this as a data frame
+exp <- data.frame(exp)
+obs2403 <- obs
+write.csv(exp, "C:\\Users\\raven\\Documents\\exp2403.csv")
+
+# Export observation data
+obs <- data.frame(c(obs548,obs2400,obs2401,obs2402,obs2403))
+colnames(obs) <- "obs"
+write.csv(obs, "C:\\Users\\raven\\Documents\\obs.csv")
