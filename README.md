@@ -1,4 +1,9 @@
-# Hierarchically Embedded Social Dynamics in Vampire Bats
+## Hierarchically embedded scales of movement shape the social networks of vampire bats, Version 1
+
+# Description
+This project analyzed the relation between social connectedness and hierarchically embedded scales of movement using both real and simulated data of the common vampire bat. Included are the raw empirical data, simulated data, NetLogo models, and R code used to analyze the data and create graphs.
+
+# File Summaries and Instructions
 This is a repository of all data files and scripts used to study how movement at multiple, hierarchically embedded scales of movement affects the centrality of vampire bats. For a full description, please see the associated paper (or preprint), "Hierarchically Embedded Social Dynamics in Vampire Bats" by C. Raven A. Hartman, Imran Razik, Gerald S. Wilkinson, Ian M. Hamilton, Elizabeth A. Hobson, and Gerald G. Carter. Please contact Raven Hartman at hartman.424@buckeyemail.osu.edu if you have any questions, comments, or concerns.
 
 All necessary R packages and NetLogo extensions are listed at the top of each R and NetLogo file, respectively. Filepaths will need to be edited to properly run code, however, most files should be ready to run unless otherwise stated.
