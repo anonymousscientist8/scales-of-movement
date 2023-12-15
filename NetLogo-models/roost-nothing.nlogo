@@ -1,14 +1,3 @@
-; This code uses a real probabilities of roost switching, partner switching, and cluster
-; switching in vampire bats to simulate the movement of vampire bats between roosts,
-; clusters, and grooming partners. The output of this model is a dataset showing
-; for each bat, the identities of every grooming recipient for each grooming event.
-; Additionally outputs the spaces (clusters, roosts) that each bat occupied every minute.
-; In this model, bats have correlated roost, cluster, and partner switching probabilities
-; so bats who are more likely to switch more frequently at one scale of movement also
-; switch more frequently at the other scales.
-; Written by C. Raven A. Hartman
-; Last edited 11/16/2022
-
 ; Load extensions
 extensions
 [
