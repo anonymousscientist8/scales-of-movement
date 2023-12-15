@@ -137,7 +137,7 @@ for (j in 1:length(bats_i)) {
 # Convert latencies into number of half hours since last switch
 imran2$latency <- imran2$latency/(60*30)
 
-3# Remove the males
+# Remove the males, if desired
 males <- c('pup','noa','xanthe','alexei','ad','ald')
 #imran2 <- imran2[((imran2$bat %in% males) == F),]
 
