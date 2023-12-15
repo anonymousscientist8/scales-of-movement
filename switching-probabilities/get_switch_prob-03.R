@@ -1,8 +1,3 @@
-## Get probabilities of each bats switching given latency since last
-## observed switch.
-## Writted by C. Raven A. Hartman and Gerald G. Carter
-## Last modified: 11/4/2022
-
 # clear workspace
 rm(list=ls())
 
