@@ -4,7 +4,7 @@ library(igraph)
 library(stringi)
 
 ###############################################################################
-# Predicting grooming centrality from cluster switching
+# Predicting grooming centrality from cluster switching and partner switching
 rm(list = ls())
 
 # Get cluster switching and partner switching rates
@@ -88,7 +88,7 @@ gd %>%
 write.csv(gd, "C:\\Users\\raven\\Documents\\gd.csv")
 
 ################################################################################
-# Predicting grooming centrality from cluster switching
+# Predicting grooming centrality from roost switching
 rm(list = ls())
 
 # load packages
