@@ -16,41 +16,40 @@ groomed <- c(centrality$centrality,gd$n,gd$n)
 type <- rep(0,length(groomed))
 for (i in 1:length(type)) {
   if (i <= length(centrality$centrality)) {
-    type[i] <- "a"
+    type[i] <- "a" # Denote where roost switching data is stored
   } else {
     if (i <= (length(centrality$centrality)+length(gd$cs))) {
-      type[i] <- "b"
+      type[i] <- "b" # Denote where cluster switching data is stored
     } else {
       if (i <= (length(centrality$centrality)+length(gd$cs)*2)) {
-        type[i] <- "c"
+        type[i] <- "c" # Denote where partner switching data is stored
       }
     }
   }
 }
 
-# Combine lists into datafeame
+# Combine lists into datafeame and make sure theyh are numeric
 gd2 <- data.frame(cbind(type,switch,groomed))
 gd2$switch <- as.numeric(gd2$switch)
 gd2$groomed <- as.numeric(gd2$groomed)
 
 # Graph label
 label <- c(
-  "a" = "(a) Roost Switching (switches / day)",
-  "b" = "(b) Cluster Switching (switches / day)",
-  "c" = "(c) Partner Switching (switches / hour)"
+  "a" = "Roost Switching (switches / day)",
+  "b" = "Cluster Switching (switches / day)",
+  "c" = "Partner Switching (switches / hour)"
 )
 
 # Graph theme
 theme_new <- theme_set(theme_bw())
-theme_new <- theme_update(legend.position = "none", strip.text = element_text(), strip.placement = "outside", axis.title.x=element_blank(), strip.background = element_blank())
+theme_new <- theme_update(legend.position = "none", strip.text = element_text(size = 16), strip.placement = "outside", axis.title.x=element_blank(), strip.background = element_blank(), axis.title.y = element_text(size = 16))
 
 # Plot
 ggplot(data = gd2, mapping =  aes(x = switch, y = groomed, color = type)) + 
   geom_point() +
   geom_smooth(method = 'lm') +
-  ylab("Partners Groomed")  +
+  ylab("Count of Partners Groomed")  +
   facet_wrap(~type, nrow = 1, scales = "free", strip.position = "bottom", labeller = as_labeller(label))
-
 
 # Run permutation tests and get statistic metrics, relationship metrics
 model <- lm(centrality~scale(roost_switch), data=centrality) # Get the roost switching linear model
