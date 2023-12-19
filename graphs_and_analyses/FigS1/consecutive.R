@@ -5,26 +5,26 @@ library(stringi)
 rm(list = ls())
 
 ## Distribution of roost switching rates
-# Import Wilkinson Data, Provides Roost Switching Rate
-wilkinson <- read.csv("filepath\\wilkinson2.csv")
-#wilkinson <- wilkinson[(wilkinson$Sex == "F"),]
+# Import Data, Provides Roost Switching Rate
+W <- read.csv("filepath\\roosting_information.csv")
+#W <- W[(W$Sex == "F"),]
 
 # All bats in the model
-Bats_w <- unique(wilkinson$ID)
+Bats_w <- unique(W$ID)
 Bats_w <- Bats_w[Bats_w != ""]
 
 # For each bat, count the number of times the bat has been observed
 obs_count <- rep(0,length(Bats_w))
 for (i in 1:length(Bats_w)) {
-  temp <- wilkinson[!(wilkinson$ID != Bats_w[i]),]
+  temp <- W[!(W$ID != Bats_w[i]),]
   obs_count[i] <- length(unique(temp$Date))
 }
 Bats_w <- Bats_w[obs_count > 25] # Filter out bats with less than 25 observations
 
 # Convert date into something a little easier to work with
-wilkinson$Date <- as.numeric(as.POSIXlt(wilkinson$Date, format="%m/%d/%Y")) / 
+W$Date <- as.numeric(as.POSIXlt(W$Date, format="%m/%d/%Y")) / 
   (60*60*24)
-wilkinson <- wilkinson[!is.na(wilkinson$Date),]
+W <- W[!is.na(W$Date),]
 
 # Count of the number of times a bat was observed switching roosts
 # on consecutive days (numerator and denominator)
@@ -34,7 +34,7 @@ roost_sw_den <- rep(0,length(obs_count[obs_count > 25]))
 # For each bat
 for (i in 1:length(Bats_w)) {
   # Filter out observations of bats
-  temp1 <- wilkinson[!(wilkinson$ID != Bats_w[i]),]
+  temp1 <- W[!(W$ID != Bats_w[i]),]
   # And if there is more than one occurrence of this bat
   if (length(temp1$Date) > 1) {
     # Use a loop to count the number of roost switches on consecutive days
@@ -58,7 +58,7 @@ for (i in 1:length(Bats_w)) {
   
   # Now add instances where the same roost was measured the day after or before
   for (j in 1:length(temp1$Date)) {
-    temp2 <- wilkinson[which(abs(wilkinson$Date - (temp1$Date[j]+1)) < 1.5 & wilkinson$Roost == temp1$Roost[j]),]
+    temp2 <- W[which(abs(W$Date - (temp1$Date[j]+1)) < 1.5 & W$Roost == temp1$Roost[j]),]
     roost_sw_den[i] <- roost_sw_den[i] + 1
     roost_sw_num[i] <- roost_sw_num[i] + 1
   }
@@ -79,28 +79,28 @@ ggplot(data = roost_sw) +
   theme_bw()
 
 # Cluster / crevice information
-load("filepath\\imran.RData")
-imran <- associations2019
+load("filepath\\clustering_information.RData")
+I <- associations2019
 
 # Only consider the primary cage
-imran <- imran[!(imran$cage != 'big_cage'),]
+I <- I[!(I$cage != 'big_cage'),]
 
 # Obtain all bats and remove any that are NA
-bats_i <- unique(c(imran$A,imran$B,imran$C,
-                   imran$D,imran$E,imran$F,
-                   imran$G,imran$H,imran$I,
-                   imran$J,imran$K,imran$L,
-                   imran$M,imran$N,imran$O,
-                   imran$P,imran$Q,imran$R,
-                   imran$S,imran$T,imran$U,
-                   imran$V))
+bats_i <- unique(c(I$A,I$B,I$C,
+                   I$D,I$E,I$F,
+                   I$G,I$H,I$I,
+                   I$J,I$K,I$L,
+                   I$M,I$N,I$O,
+                   I$P,I$Q,I$R,
+                   I$S,I$T,I$U,
+                   I$V))
 bats_i <- bats_i[!is.na(bats_i)]
 
 # List of unique dates
-times_i <- unique(imran$period)
+times_i <- unique(I$period)
 
 # Make my life easier by turning NA's to 0's
-imran[is.na(imran)] <- 0
+I[is.na(I)] <- 0
 
 # For each time
 for (i in 1:length(times_i)) {
@@ -108,22 +108,22 @@ for (i in 1:length(times_i)) {
   for (j in 1:length(bats_i)) {
     # Create a data frame that is just the bats at each time
     if ((i == 1) & (j == 1)) {
-      imran2 <- data.frame(times = times_i[i],
+      I2 <- data.frame(times = times_i[i],
                            bat = bats_i[j])
     } else {
-      imran2_add <- data.frame(times = times_i[i],
+      I2_add <- data.frame(times = times_i[i],
                                bat = bats_i[j])
-      imran2 <- rbind(imran2,imran2_add)
+      I2 <- rbind(I2,I2_add)
     }
   }
 }
 
 # Then for each combination of day and time
-for (i in 1:length(imran2$times)) {
+for (i in 1:length(I2$times)) {
   # Filter out the original df to only times that matter
-  temp <- imran[!(imran$period != imran2$times[i]),]
+  temp <- I[!(I$period != I2$times[i]),]
   # And the bat we're looking at
-  r <- which(temp == imran2$bat[i], arr.ind=TRUE)
+  r <- which(temp == I2$bat[i], arr.ind=TRUE)
   temp <- temp[r[1],]
   # And then either create a vector showing the camera that bat was observed at
   if (i == 1) {
@@ -138,19 +138,19 @@ for (i in 1:length(imran2$times)) {
     camera <- rbind(camera,camera_add)
   }
 }
-imran2 <- cbind(imran2,camera)
+I2 <- cbind(I2,camera)
 
 # Get rid of row names
-rownames(imran2) <- NULL
+rownames(I2) <- NULL
 
 # Add a spacer between hours and minutes so it can be converted into a number
-for (i in 1:length(imran2$times)) {
-  stri_sub(imran2$times[i],nchar(imran2$times[i])-1,nchar(imran2$times[i])-2) <- ":"
+for (i in 1:length(I2$times)) {
+  stri_sub(I2$times[i],nchar(I2$times[i])-1,nchar(I2$times[i])-2) <- ":"
 }
 
 # Convert time into a number divisible by half hours
-imran2$times <- as.numeric(as.POSIXlt(imran2$times, format="%Y.%m.%d_%H:%M"))
-imran2$times <- imran2$times/(60*30*48)
+I2$times <- as.numeric(as.POSIXlt(I2$times, format="%Y.%m.%d_%H:%M"))
+I2$times <- I2$times/(60*30*48)
 
 # Create vectors to determine cluster switching probabilities
 cluster_sw_num <- rep(0,length(bats_i))
@@ -160,7 +160,7 @@ cluster_sw_den <- rep(0,length(bats_i))
 X <- 1/24
 for (i in 1:length(bats_i)) {
   # Filter to only known positions of the focal bat
-  temp <- imran2[!(imran2$bat != bats_i[i]),]
+  temp <- I2[!(I2$bat != bats_i[i]),]
   temp <- temp[!(temp$camera == 0),]
   # Then, for each row
   if (length(temp$camera) > 1) {
@@ -197,43 +197,43 @@ ggplot(data = cluster_sw) +
 ## Partner switching between consecutive minutes
 # Load data for analysis
 load("filepath\\events.RData")
-imran <- events2019
+I <- events2019
 
 # Filter out non-grooming events and events not in the big cage
-imran <- imran[!(imran$cage != 'big_cage'),]
-imran <- imran[!(imran$behav != 'g'),]
-hours <- length(unique(imran$period))
+I <- I[!(I$cage != 'big_cage'),]
+I <- I[!(I$behav != 'g'),]
+hours <- length(unique(I$period))
 
 # Obtain all bats and remove any that are NA
-bats_i <- unique(c(imran$actor,imran$receiver))
+bats_i <- unique(c(I$actor,I$receiver))
 bats_i <- bats_i[!is.na(bats_i)]
 
 # Modify time stamps to include minutes
-for (i in 1:length(imran$duration)) {
+for (i in 1:length(I$duration)) {
   # Change the string to include minutes
-  if (nchar(imran$min.start[i]) > 1) {
-    substring(imran$period[i], nchar(imran$period[i])-1, nchar(imran$period[i])) <- as.character(imran$min.start[i])
+  if (nchar(I$min.start[i]) > 1) {
+    substring(I$period[i], nchar(I$period[i])-1, nchar(I$period[i])) <- as.character(I$min.start[i])
   } else {
-    substring(imran$period[i], nchar(imran$period[i]), nchar(imran$period[i])) <- as.character(imran$min.start[i])
+    substring(I$period[i], nchar(I$period[i]), nchar(I$period[i])) <- as.character(I$min.start[i])
   }
   # Add ':' between minutes and hours and minutes and seconds
-  stri_sub(imran$period[i],nchar(imran$period[i])-1,nchar(imran$period[i])-2) <- ":"
-  stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+1) <- ":"
+  stri_sub(I$period[i],nchar(I$period[i])-1,nchar(I$period[i])-2) <- ":"
+  stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+1) <- ":"
   
   # Add seconds to the end
-  if (nchar(imran$sec.start[i]) > 1) {
-    stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+2) <-  as.character(imran$sec.start[i])   
+  if (nchar(I$sec.start[i]) > 1) {
+    stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+2) <-  as.character(I$sec.start[i])   
   } else {
-    stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+1) <-  "0"
-    stri_sub(imran$period[i],nchar(imran$period[i])+2,nchar(imran$period[i])+2) <-  as.character(imran$sec.start[i])
+    stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+1) <-  "0"
+    stri_sub(I$period[i],nchar(I$period[i])+2,nchar(I$period[i])+2) <-  as.character(I$sec.start[i])
   }
 }
 
 # Convert to seconds
-imran$period <- as.numeric(as.POSIXlt(imran$period, format="%Y.%m.%d_%H:%M:%S"))/(60*60*24)
+I$period <- as.numeric(as.POSIXlt(I$period, format="%Y.%m.%d_%H:%M:%S"))/(60*60*24)
 
 # Order by time
-imran <- imran[order(imran$period),]
+I <- I[order(I$period),]
 
 # Create values for determining whether bats switched partners between consecutive bouts (w/in X minutes)
 partner_sw_num <- rep(0,length(bats_i))
@@ -245,7 +245,7 @@ partner_sw_den2 <- rep(0,length(bats_i))
 X <- 1/24
 for (i in 1:length(bats_i)) {
   # Filter out everything except the focal bat
-  temp <- imran[!(imran$actor != bats_i[i]),]
+  temp <- I[!(I$actor != bats_i[i]),]
   # If there are multiple instances of grooming to look at
   if (length(temp$obs) > 1) {
     # And for each observation
@@ -268,7 +268,7 @@ for (i in 1:length(bats_i)) {
 X <- 1/24
 for (i in 1:length(bats_i)) {
   # Filter out everything except the focal bat
-  temp <- imran[!(imran$actor != bats_i[i]),]
+  temp <- I[!(I$actor != bats_i[i]),]
   # If there are multiple instances of grooming to look at
   if (length(temp$obs) > 1) {
     # And for each observation
