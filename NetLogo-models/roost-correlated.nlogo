@@ -221,7 +221,7 @@ to setup
   reset-ticks ; Reset ticks to time 0
   set days 3 ; Using 30 days per simulation
 
-  ; Roost switching probabilities (from Wilkinson data), where each row represents a
+  ; Roost switching probabilities, where each row represents a
   ; different bat and each column a different day since last switch (increases from left
   ; to right)
   let roost-switch-matrix matrix:from-row-list [[	0.155224257	0.20812481	0.273223002	0.349691189	0.434758486	0.523849898	0.611448858	0.692395187	0.763014027	0.821597727	0.868200907	0.904051859	0.930926768	0.950684687	]
