@@ -5,9 +5,9 @@ library(stringi)
 rm(list = ls())
 
 # Download average movement rate data
-roost_sw <- read.csv("C:\\Users\\raven\\Documents\\roost_sw.csv")
-cluster_sw <- read.csv("C:\\Users\\raven\\Documents\\cluster_sw.csv")
-partner_sw <- read.csv("C:\\Users\\raven\\Documents\\partner_sw.csv")
+roost_sw <- read.csv("Filepath\\roost_sw.csv")
+cluster_sw <- read.csv("Filepath\\cluster_sw.csv")
+partner_sw <- read.csv("Filepath\\partner_sw.csv")
 
 # Find the number of rows, and the maximum nnumber of rows between the three
 r_rows <- nrow(roost_sw)
