@@ -5,7 +5,7 @@ library(stringi)
 rm(list = ls())
 
 # Load data
-gd <- read.csv("C:\\Users\\raven\\Documents\\gd.csv")
+gd <- read.csv("Filepath\\gd.csv")
 gd <- gd[,c(-1,-2,-3)] # Reorganize
 
 # Pull out cluster switching effects and partner switching effects
