@@ -4,12 +4,12 @@ library(igraph)
 library(stringi)
 rm(list = ls())
 
-# Import Wilkinson Data, Provides Roost Switching Rate
-wilkinson <- read.csv("C:\\Users\\raven\\Documents\\wilkinson2.csv")
-wilkinson <- wilkinson[(is.na(wilkinson$Band)==F),]
+# Import Data, Provides Roost Switching Rate
+W <- read.csv("C:\\Users\\raven\\Documents\\roosting_information.csv")
+W <- W[(is.na(W$Band)==F),]
 
 # All bats in the model
-Bats_w <- unique(wilkinson$ID)
+Bats_w <- unique(W$ID)
 Bats_w <- Bats_w[Bats_w != ""]
 
 ## Social differentiation (roost association) for common vampire bats
@@ -17,14 +17,14 @@ Bats_w <- Bats_w[Bats_w != ""]
 # For each bat, count the number of times the bat has been observed
 obs_count <- rep(0,length(Bats_w))
 for (i in 1:length(Bats_w)) {
-  temp <- wilkinson[!(wilkinson$ID != Bats_w[i]),]
+  temp <- W[!(W$ID != Bats_w[i]),]
   obs_count[i] <- length(unique(temp$Date))
 }
 
 # Count the number of intervals where both were observed in or not in the same group
 # For each bat, create a matrix of the bat's position at each interval
 for (i in 1:length(Bats_w)) {
-  temp <- wilkinson[!(wilkinson$ID != Bats_w[i]),]
+  temp <- W[!(W$ID != Bats_w[i]),]
   
   # Create a vector that is used to store number of instances where bats were in the same area
   x_vec <- rep(0,length(Bats_w))
@@ -34,8 +34,8 @@ for (i in 1:length(Bats_w)) {
   # and at each interval
   for (j in 1:length(temp$Date)) {
     # Use filtered dataset to get roost position at each time
-    temp2 <- wilkinson[which(wilkinson$Date == temp$Date[j] & wilkinson$Roost == temp$Roost[j]),]
-    temp3 <- wilkinson[which(wilkinson$Date == temp$Date[j] & wilkinson$Roost != temp$Roost[j]),]
+    temp2 <- W[which(W$Date == temp$Date[j] & W$Roost == temp$Roost[j]),]
+    temp3 <- W[which(W$Date == temp$Date[j] & W$Roost != temp$Roost[j]),]
     # And for each bat
     for (k in 1:length(Bats_w)) {
       # If looking at a different bat
@@ -97,12 +97,12 @@ write.csv(roost_soc_diff, "C:\\Users\\raven\\Documents\\roost_soc_diff.csv")
 
 # Now we perform a permutation test to test for significance
 # Get group-by-individual matrix
-Wilkinson <- wilkinson[(is.na(wilkinson$Band)==F),] # Filter
-roosts <- unique(Wilkinson$Roost) # Get all roosts
-times <- unique(Wilkinson$Date) # Get all dates
+W <- W[(is.na(W$Band)==F),] # Filter
+roosts <- unique(W$Roost) # Get all roosts
+times <- unique(W$Date) # Get all dates
 for (i in 1:length(times)) { # For all dates
   for (j in 1:length(roosts)) { # And for each roost
-    temp2 <- Wilkinson[!(Wilkinson$Date != times[i]),] # Filter to only the applicable date
+    temp2 <- W[!(W$Date != times[i]),] # Filter to only the applicable date
     temp2 <- temp2[!(temp2$Roost != roosts[j]),] # And place
     if (length(temp2$ID) > 0) { # And if there's anything to look at
       temp <- rep(NA,length(Bats_w)+2) # Initialize a vector
@@ -162,28 +162,28 @@ data.frame(exp=exp, permutation = 1:length(exp)) %>%
 
 # Cluster / crevice information
 rm(list = ls())
-load("C:\\Users\\raven\\Documents\\imran.RData")
-imran <- associations2019
+load("C:\\Users\\raven\\Documents\\clustering_information.RData")
+I <- associations2019
 
 # Only consider the primary cage
-imran <- imran[!(imran$cage != 'big_cage'),]
+I <- I[!(I$cage != 'big_cage'),]
 
 # Obtain all bats and remove any that are NA
-bats_i <- unique(c(imran$A,imran$B,imran$C,
-                   imran$D,imran$E,imran$F,
-                   imran$G,imran$H,imran$I,
-                   imran$J,imran$K,imran$L,
-                   imran$M,imran$N,imran$O,
-                   imran$P,imran$Q,imran$R,
-                   imran$S,imran$T,imran$U,
-                   imran$V))
+bats_i <- unique(c(I$A,I$B,I$C,
+                   I$D,I$E,I$F,
+                   I$G,I$H,I$I,
+                   I$J,I$K,I$L,
+                   I$M,I$N,I$O,
+                   I$P,I$Q,I$R,
+                   I$S,I$T,I$U,
+                   I$V))
 bats_i <- bats_i[!is.na(bats_i)]
 
 # List of unique dates
-times_i <- unique(imran$period)
+times_i <- unique(I$period)
 
 # Make my life easier by turning NA's to 0's
-imran[is.na(imran)] <- 0
+I[is.na(I)] <- 0
 
 # For each time
 for (i in 1:length(times_i)) {
@@ -191,22 +191,22 @@ for (i in 1:length(times_i)) {
   for (j in 1:length(bats_i)) {
     # Create a data frame that is just the bats at each time
     if ((i == 1) & (j == 1)) {
-      imran2 <- data.frame(time = times_i[i],
+      I2 <- data.frame(time = times_i[i],
                            bat = bats_i[j])
     } else {
-      imran2_add <- data.frame(time = times_i[i],
+      I2_add <- data.frame(time = times_i[i],
                                bat = bats_i[j])
-      imran2 <- rbind(imran2,imran2_add)
+      I2 <- rbind(I2,I2_add)
     }
   }
 }
 
 # Then for each combination of day and time
-for (i in 1:length(imran2$time)) {
+for (i in 1:length(I2$time)) {
   # Filter out the original df to only times that matter
-  temp <- imran[!(imran$period != imran2$time[i]),]
+  temp <- I[!(I$period != I2$time[i]),]
   # And the bat we're looking at
-  r <- which(temp == imran2$bat[i], arr.ind=TRUE)
+  r <- which(temp == I2$bat[i], arr.ind=TRUE)
   temp <- temp[r[1],]
   # And then either create a vector showing the camera that bat was observed at
   if (i == 1) {
@@ -221,26 +221,26 @@ for (i in 1:length(imran2$time)) {
     camera <- rbind(camera,camera_add)
   }
 }
-imran2 <- cbind(imran2,camera)
+I2 <- cbind(I2,camera)
 
 # Get rid of row names
-rownames(imran2) <- NULL
+rownames(I2) <- NULL
 
 # Add a spacer between hours and minutes so it can be converted into a number
-for (i in 1:length(imran2$time)) {
-  stri_sub(imran2$time[i],nchar(imran2$time[i])-1,nchar(imran2$time[i])-2) <- ":"
+for (i in 1:length(I2$time)) {
+  stri_sub(I2$time[i],nchar(I2$time[i])-1,nchar(I2$time[i])-2) <- ":"
 }
 
 # Convert time into a number divisible by half hours
-imran2$time <- as.numeric(as.POSIXlt(imran2$time, format="%Y.%m.%d_%H:%M"))
-imran2$time <- imran2$time/(60*30)
+I2$time <- as.numeric(as.POSIXlt(I2$time, format="%Y.%m.%d_%H:%M"))
+I2$time <- I2$time/(60*30)
 
 ## Social differentiation (cluster association) for common vampire bats
 
 # For each bat, count the number of times the bat has been observed
 obs_count <- rep(0,length(bats_i))
 for (i in 1:length(bats_i)) {
-  temp <- imran2[!(imran2$bat != bats_i[i]),]
+  temp <- I2[!(I2$bat != bats_i[i]),]
   temp <- temp[!(temp$camera == 0),]
   obs_count[i] <- length(temp$camera)
 }
@@ -248,7 +248,7 @@ for (i in 1:length(bats_i)) {
 # Count the number of intervals where both were observed in or not in the same group
 # For each bat, create a matrix of the bat's position at each interval
 for (i in 1:length(bats_i)) {
-  temp <- imran2[!(imran2$bat != bats_i[i]),]
+  temp <- I2[!(I2$bat != bats_i[i]),]
   temp <- temp[!(temp$camera == 0),]
   
   # Create a vector that is used to store number of instances where bats were in the same area
@@ -259,8 +259,8 @@ for (i in 1:length(bats_i)) {
   # and at each interval
   for (j in 1:length(temp$time)) {
     # Use filtered dataset to get roost position at each time
-    temp2 <- imran2[which(imran2$time == temp$time[j] & imran2$camera == temp$camera[j]),]
-    temp3 <- imran2[which(imran2$time == temp$time[j] & imran2$camera != temp$camera[j] & imran2$camera != 0),]
+    temp2 <- I2[which(I2$time == temp$time[j] & I2$camera == temp$camera[j]),]
+    temp3 <- I2[which(I2$time == temp$time[j] & I2$camera != temp$camera[j] & I2$camera != 0),]
     # And for each bat
     for (k in 1:length(bats_i)) {
       # If looking at a different bat
@@ -285,7 +285,7 @@ for (i in 1:length(bats_i)) {
 # Get the number of observatoins of each bat
 Observations <- rep(0,length(bats_i))
 for (i in 1:length(bats_i)) {
-  temp <- imran2[!(imran2$bat != bats_i[i]),]
+  temp <- I2[!(I2$bat != bats_i[i]),]
   temp <- temp[!(temp$camera == 0),]
   Observations[i] <- length(temp$bat)
 }
@@ -327,12 +327,12 @@ write.csv(cluster_soc_diff, "C:\\Users\\raven\\Documents\\cluster_soc_diff.csv")
 
 # Now we perform a permutation test to test for significance
 # Get group-by-individual matrix
-imran3 <- imran[!(imran$cluster == 0),]
+I3 <- I[!(I$cluster == 0),]
 cameras <- c(1,2,3)
 z <- 0
 for (i in 1:length(times_i)) { # For all times
   for (j in 1:3) { # Check each cluster
-    temp2 <- imran3[!(imran3$period != times_i[i]),] # Filter to each time
+    temp2 <- I3[!(I3$period != times_i[i]),] # Filter to each time
     temp2 <- temp2[!(temp2$camera != cameras[j]),] # And camera
     if (length(temp2$A) > 0) { # If entries still exist
       temp <- rep(NA,length(bats_i[Observations > 100])+2) # Make vector for bats presence
@@ -402,49 +402,49 @@ rm(list = ls())
 
 # Load data for analysis
 load("C:\\Users\\raven\\Documents\\events.RData")
-imran <- events2019
+I <- events2019
 
 # Filter out non-grooming events and events not in the big cage
-imran <- imran[!(imran$cage != 'big_cage'),]
-imran <- imran[!(imran$behav != 'g'),]
+I <- I[!(I$cage != 'big_cage'),]
+I <- I[!(I$behav != 'g'),]
 
 # Obtain all bats and remove any that are NA
-bats_i <- unique(c(imran$actor,imran$receiver))
+bats_i <- unique(c(I$actor,I$receiver))
 bats_i <- bats_i[!is.na(bats_i)]
 
 # Modify time stamps to include minutes
-for (i in 1:length(imran$duration)) {
+for (i in 1:length(I$duration)) {
   # Change the string to include minutes
-  if (nchar(imran$min.start[i]) > 1) {
-    substring(imran$period[i], nchar(imran$period[i])-1, nchar(imran$period[i])) <- as.character(imran$min.start[i])
+  if (nchar(I$min.start[i]) > 1) {
+    substring(I$period[i], nchar(I$period[i])-1, nchar(I$period[i])) <- as.character(I$min.start[i])
   } else {
-    substring(imran$period[i], nchar(imran$period[i]), nchar(imran$period[i])) <- as.character(imran$min.start[i])
+    substring(I$period[i], nchar(I$period[i]), nchar(I$period[i])) <- as.character(I$min.start[i])
   }
   # Add ':' between minutes and hours and minutes and seconds
-  stri_sub(imran$period[i],nchar(imran$period[i])-1,nchar(imran$period[i])-2) <- ":"
-  stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+1) <- ":"
+  stri_sub(I$period[i],nchar(I$period[i])-1,nchar(I$period[i])-2) <- ":"
+  stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+1) <- ":"
   
   # Add seconds to the end
-  if (nchar(imran$sec.start[i]) > 1) {
-    stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+2) <-  as.character(imran$sec.start[i])   
+  if (nchar(I$sec.start[i]) > 1) {
+    stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+2) <-  as.character(I$sec.start[i])   
   } else {
-    stri_sub(imran$period[i],nchar(imran$period[i])+1,nchar(imran$period[i])+1) <-  "0"
-    stri_sub(imran$period[i],nchar(imran$period[i])+2,nchar(imran$period[i])+2) <-  as.character(imran$sec.start[i])
+    stri_sub(I$period[i],nchar(I$period[i])+1,nchar(I$period[i])+1) <-  "0"
+    stri_sub(I$period[i],nchar(I$period[i])+2,nchar(I$period[i])+2) <-  as.character(I$sec.start[i])
   }
 }
 
 # Convert to seconds
-imran$period <- as.numeric(as.POSIXlt(imran$period, format="%Y.%m.%d_%H:%M:%S"))
+I$period <- as.numeric(as.POSIXlt(I$period, format="%Y.%m.%d_%H:%M:%S"))
 
 # Order by time
-imran <- imran[order(imran$period),]
+I <- I[order(I$period),]
 
 ## Social differentiation (grooming interaction) for common vampire bats
 # Create a dataframe of actors, order of action, receivers, and grooming duration
 # For each bat
 for (i in 1:length(bats_i)) {
   # Filter out the non-focal bats
-  temp <- imran[!(imran$actor != bats_i[i]),]
+  temp <- I[!(I$actor != bats_i[i]),]
   # And for each row
   k <- 0
   if (length(temp$obs) >= 1) {
@@ -499,7 +499,7 @@ soc_diff <- data.frame(soc_diff)
 # Get the number of observatoins of each bat
 Observations <- rep(0,length(bats_i))
 for (i in 1:length(bats_i)) {
-  temp <- imran[!(imran$actor != bats_i[i]),]
+  temp <- I[!(I$actor != bats_i[i]),]
   Observations[i] <- length(temp$actor)
 }
 soc_diff <- cbind(soc_diff,Observations)
