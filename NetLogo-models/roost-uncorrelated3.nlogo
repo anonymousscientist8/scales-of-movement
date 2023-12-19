@@ -928,10 +928,10 @@ to go
     let counter 000
     let saved? FALSE
     while [not saved?] [
-      let filename (word "C:/Users/raven/Documents/interactions" counter ".csv")
-      let filename3 (word "C:/Users/raven/Documents/interactions-time" counter ".csv")
-      let filename4 (word "C:/Users/raven/Documents/interactions-roost" counter ".csv")
-      let filename2 (word "C:/Users/raven/Documents/associations" counter ".csv")
+      let filename (word "Filepath/interactions" counter ".csv")
+      let filename3 (word "Filepath/interactions-time" counter ".csv")
+      let filename4 (word "Filepath/interactions-roost" counter ".csv")
+      let filename2 (word "Filepath/associations" counter ".csv")
       if not file-exists? filename [
         csv:to-file filename2 [(specific-log)] of turtles
         csv:to-file filename [(groom-log)] of turtles
