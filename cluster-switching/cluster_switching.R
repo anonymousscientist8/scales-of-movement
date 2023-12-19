@@ -5,7 +5,7 @@ library(stringi)
 rm(list = ls())
 
 ## Imran's Dataset, used to find cluster switching rate
-load("filepath\\imran.RData")
+load("filepath\\cluster_information.RData")
 imran <- associations2019
 
 # Remove observations from infrequently used small cage
