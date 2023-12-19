@@ -5,7 +5,7 @@ library(stringi)
 rm(list = ls())
 
 # Import Data, Provides Roost Switching Rate
-W <- read.csv("C:\\Users\\raven\\Documents\\roosting_information.csv")
+W <- read.csv("Filepath\\roosting_information.csv")
 W <- W[(is.na(W$Band)==F),]
 
 # All bats in the model
@@ -93,7 +93,7 @@ soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
 
 # Export the roost social differentiation
 roost_soc_diff <- soc_diff
-write.csv(roost_soc_diff, "C:\\Users\\raven\\Documents\\roost_soc_diff.csv")
+write.csv(roost_soc_diff, "Filepath\\roost_soc_diff.csv")
 
 # Now we perform a permutation test to test for significance
 # Get group-by-individual matrix
@@ -162,7 +162,7 @@ data.frame(exp=exp, permutation = 1:length(exp)) %>%
 
 # Cluster / crevice information
 rm(list = ls())
-load("C:\\Users\\raven\\Documents\\clustering_information.RData")
+load("Filepath\\clustering_information.RData")
 I <- associations2019
 
 # Only consider the primary cage
@@ -323,7 +323,7 @@ soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
 
 # Export data frame
 cluster_soc_diff <- soc_diff
-write.csv(cluster_soc_diff, "C:\\Users\\raven\\Documents\\cluster_soc_diff.csv")
+write.csv(cluster_soc_diff, "Filepath\\cluster_soc_diff.csv")
 
 # Now we perform a permutation test to test for significance
 # Get group-by-individual matrix
@@ -401,7 +401,7 @@ data.frame(exp=exp, permutation = 1:length(exp)) %>%
 rm(list = ls())
 
 # Load data for analysis
-load("C:\\Users\\raven\\Documents\\events.RData")
+load("Filepath\\events.RData")
 I <- events2019
 
 # Filter out non-grooming events and events not in the big cage
@@ -513,7 +513,7 @@ soc_diff <- soc_diff[!bool_filter,]
 soc_diff_avg <- mean(soc_diff$soc_diff, na.rm = T)
 
 partner_soc_diff <- soc_diff
-write.csv(partner_soc_diff, "C:\\Users\\raven\\Documents\\partner_soc_diff.csv")
+write.csv(partner_soc_diff, "Filepath\\partner_soc_diff.csv")
 
 # Permutation test (randomize within cage, because I don't know who is in what cluster)
 groom_df2 <- groom_df
@@ -619,7 +619,7 @@ for (x in 1:50) {
       ' ',
       '',
       paste(
-        'C:\\Users\\raven\\Documents\\interactions',
+        'Filepath\\interactions',
         as.character(a),
         '.csv'
       )
@@ -630,7 +630,7 @@ for (x in 1:50) {
       ' ',
       '',
       paste(
-        'C:\\Users\\raven\\Documents\\associations',
+        'Filepath\\associations',
         as.character(a),
         '.csv'
       )
@@ -802,9 +802,9 @@ library(stringi)
 rm(list = ls())
 
 a <- 2600
-t1 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-t2 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-roost',as.character(a),'.csv')), sep = ',', fill = T)
-t3 <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions-time',as.character(a),'.csv')), sep = ',', fill = T)
+t1 <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+t2 <- read.table(gsub(' ', '', paste('Filepath\\interactions-roost',as.character(a),'.csv')), sep = ',', fill = T)
+t3 <- read.table(gsub(' ', '', paste('Filepath\\interactions-time',as.character(a),'.csv')), sep = ',', fill = T)
 t1 <- t1[order(t1$V1),]
 t2 <- t2[order(t2$V1),]
 t3 <- t3[order(t3$V1),]
@@ -948,7 +948,7 @@ p
 
 exp <- data.frame(exp)
 obs2600c <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2600c.csv")
+write.csv(exp, "Filepath\\exp2600c.csv")
 
 # Graph of permutations and social differentiation score, with line showing observed differentiation
 data.frame(exp=exp, permutation = 1:length(exp)) %>%
@@ -960,7 +960,7 @@ data.frame(exp=exp, permutation = 1:length(exp)) %>%
 # Export observation data
 obs <- data.frame(c(obs2600a,obs2600a,obs2600a))
 colnames(obs) <- "obs"
-write.csv(obs, "C:\\Users\\raven\\Documents\\obs2.csv")
+write.csv(obs, "Filepath\\obs2.csv")
 
 #########################
 # For creating plot 6
@@ -973,8 +973,8 @@ library(stringi)
 rm(list = ls())
 
 a <- 548
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('Filepath\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -1111,13 +1111,13 @@ p
 # Export this as a data frame
 exp <- data.frame(exp)
 obs548 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp548.csv")
+write.csv(exp, "Filepath\\exp548.csv")
 
 
 ## Remove Hierarchically Embedded Scales of Movement
 a <- 2400
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('Filepath\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -1254,12 +1254,12 @@ p
 # Export this as a data frame
 exp <- data.frame(exp)
 obs2400 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2400.csv")
+write.csv(exp, "Filepath\\exp2400.csv")
 
 ## Remove individual variation in partner switching
 a <- 2401
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('Filepath\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -1396,12 +1396,12 @@ p
 # Export this as a data frame
 exp <- data.frame(exp)
 obs2401 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2401.csv")
+write.csv(exp, "Filepath\\exp2401.csv")
 
 ## Remove byproduct partner fidelity
 a <- 2402
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('Filepath\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -1539,12 +1539,12 @@ p
 # Export this as a data frame
 exp <- data.frame(exp)
 obs2402 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2402.csv")
+write.csv(exp, "Filepath\\exp2402.csv")
 
 ## Most simplified simulation
 a <- 2403
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
-y <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\associations',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+y <- read.table(gsub(' ', '', paste('Filepath\\associations',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -1682,9 +1682,9 @@ p
 # Export this as a data frame
 exp <- data.frame(exp)
 obs2403 <- obs
-write.csv(exp, "C:\\Users\\raven\\Documents\\exp2403.csv")
+write.csv(exp, "Filepath\\exp2403.csv")
 
 # Export observation data
 obs <- data.frame(c(obs548,obs2400,obs2401,obs2402,obs2403))
 colnames(obs) <- "obs"
-write.csv(obs, "C:\\Users\\raven\\Documents\\obs.csv")
+write.csv(obs, "Filepath\\obs.csv")
