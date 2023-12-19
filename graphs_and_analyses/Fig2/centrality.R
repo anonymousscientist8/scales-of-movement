@@ -8,13 +8,13 @@ library(stringi)
 rm(list = ls())
 
 # Get cluster switching and partner switching rates
-cs <- read.csv("C:\\Users\\raven\\Documents\\cluster_sw.csv")
-ps <- read.csv("C:\\Users\\raven\\Documents\\partner_sw.csv")
-ps2 <- read.csv("C:\\Users\\raven\\Documents\\partner_sw2.csv")
+cs <- read.csv("Filepath\\cluster_sw.csv")
+ps <- read.csv("Filepath\\partner_sw.csv")
+ps2 <- read.csv("Filepath\\partner_sw2.csv")
 
 # get grooming degree
 gd <- 
-  read.csv("C:\\Users\\raven\\Documents\\partner_switching.csv") %>% 
+  read.csv("Filepath\\partner_switching.csv") %>% 
   filter(duration >0) %>% 
   mutate(bat= actor) %>% 
   group_by(bat, receiver) %>% 
@@ -85,7 +85,7 @@ gd %>%
   theme_bw()
 
 # Export
-write.csv(gd, "C:\\Users\\raven\\Documents\\gd.csv")
+write.csv(gd, "Filepath\\gd.csv")
 
 ################################################################################
 # Predicting grooming centrality from roost switching
@@ -96,12 +96,12 @@ library(tidyverse)
 library(stringi)
 
 # get roost switching prob
-rs <- read.csv("C:\\Users\\raven\\Documents\\roost_sw.csv")
+rs <- read.csv("Filepath\\roost_sw.csv")
 bats_r <- unique(rs$Bats_w)
 
   
 # Load in transcripted data of grooming events for roost switching data
-grooming <- read.csv("C:\\Users\\raven\\Documents\\transcribe.csv")
+grooming <- read.csv("Filepath\\transcribe.csv")
 
 # Find the grooming degree centrality
 bats <- unique(grooming$donor) # Find all unique bats
@@ -152,5 +152,5 @@ ggplot(data = centrality) +
   theme_bw()
 
 # Export
-write.csv(centrality, "C:\\Users\\raven\\Documents\\centrality.csv")
+write.csv(centrality, "Filepath\\centrality.csv")
 
