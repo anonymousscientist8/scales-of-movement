@@ -5,13 +5,13 @@ library(igraph)
 library(tidyverse)
 
 # Import Data
-perms1 <- read.csv("C:\\Users\\raven\\Documents\\exp548.csv")
+perms1 <- read.csv("Filepath\\exp548.csv")
 colnames(perms1) <- c("X","exp1")
-perms2 <- read.csv("C:\\Users\\raven\\Documents\\exp2404.csv")
+perms2 <- read.csv("Filepath\\exp2404.csv")
 colnames(perms2) <- c("X","exp2")
-perms3 <- read.csv("C:\\Users\\raven\\Documents\\exp2405.csv")
+perms3 <- read.csv("Filepath\\exp2405.csv")
 colnames(perms3) <- c("X","exp3")
-obs <- read.csv("C:\\Users\\raven\\Documents\\obs2.csv")
+obs <- read.csv("Filepaths\\obs2.csv")
 colnames(obs) <- c("cols","value")
 obs$cols <- c("exp1","exp2","exp3")
 
