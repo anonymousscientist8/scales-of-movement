@@ -5,8 +5,8 @@ library(stringi)
 rm(list = ls())
 
 # Load centrality and switching rate data
-gd <- read.csv("C:\\Users\\raven\\Documents\\gd.csv")
-centrality <- read.csv("C:\\Users\\raven\\Documents\\centrality.csv")
+gd <- read.csv("Filepath\\gd.csv")
+centrality <- read.csv("Filepath\\centrality.csv")
 
 # Make two lists of switching rate and grooming degree
 switch <- c(centrality$roost_switch,gd$cs,gd$ps2)
