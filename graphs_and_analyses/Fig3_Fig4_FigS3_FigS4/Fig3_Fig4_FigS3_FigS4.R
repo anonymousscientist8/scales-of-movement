@@ -5,27 +5,27 @@ library(igraph)
 library(tidyverse)
 
 # Load data
-degree_est0a <- read.csv("C:\\Users\\raven\\Documents\\degree_est0.csv") %>%
+degree_est0a <- read.csv("Filepath\\degree_est0.csv") %>%
   mutate(label= "(a) individually variable rates of switching roost, cluster, and partner across 200 bats")
-degree_est0 <- read.csv("C:\\Users\\raven\\Documents\\degree_est0.csv") %>%
+degree_est0 <- read.csv("Filepath\\degree_est0.csv") %>%
   mutate(label= "individually variable rates of switching roost, cluster, and partner across 200 bats")
-degree_est1 <- read.csv("C:\\Users\\raven\\Documents\\degree_est1.csv") %>%
+degree_est1 <- read.csv("Filepath\\degree_est1.csv") %>%
   mutate(label= "(a) individually variable rates of roost switching with 200 bats")
-degree_est2 <- read.csv("C:\\Users\\raven\\Documents\\degree_est2.csv") %>%
+degree_est2 <- read.csv("Filepath\\degree_est2.csv") %>%
   mutate(label= "(b) individually variable rates of cluster switching with 200 bats")
-degree_est3 <- read.csv("C:\\Users\\raven\\Documents\\degree_est3.csv") %>%
+degree_est3 <- read.csv("Filepath\\degree_est3.csv") %>%
   mutate(label= "(c) individually variable rates of partner switching with 200 bats")
-degree_est4 <- read.csv("C:\\Users\\raven\\Documents\\degree_est4.csv") %>%
+degree_est4 <- read.csv("Filepath\\degree_est4.csv") %>%
   mutate(label= "individually variable switching rates correlated across types for 200 bats")
-degree_est5 <- read.csv("C:\\Users\\raven\\Documents\\degree_est5.csv") %>%
+degree_est5 <- read.csv("Filepath\\degree_est5.csv") %>%
   mutate(label= "(a) individually variable rates of switching roost, cluster, and partner across 100 bats")
-degree_est6 <- read.csv("C:\\Users\\raven\\Documents\\degree_est6.csv") %>%
+degree_est6 <- read.csv("Filepath\\degree_est6.csv") %>%
   mutate(label= "(b) individually variable rates of roost switching with 100 bats")
-degree_est7 <- read.csv("C:\\Users\\raven\\Documents\\degree_est7.csv") %>%
+degree_est7 <- read.csv("Filepath\\degree_est7.csv") %>%
   mutate(label= "(c) individually variable rates of cluster switching with 100 bats")
-degree_est8 <- read.csv("C:\\Users\\raven\\Documents\\degree_est8.csv") %>%
+degree_est8 <- read.csv("Filepath\\degree_est8.csv") %>%
   mutate(label= "(d) individually variable rates of partner switching with 100 bats")
-degree_est9 <- read.csv("C:\\Users\\raven\\Documents\\degree_est9.csv") %>%
+degree_est9 <- read.csv("Filepath\\degree_est9.csv") %>%
   mutate(label= "(b) individually variable switching rates correlated across types for 100 bats")
 
 # compile data
