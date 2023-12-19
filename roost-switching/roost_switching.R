@@ -3,7 +3,7 @@ library(tidyverse)
 rm(list = ls())
 
 # Import dataset
-wilkinson <- read.csv("filepath\\wilkinson2.csv")
+wilkinson <- read.csv("filepath\\roosting_information.csv")
 
 # Filter to leave out individuals observed less than Xw times per day
 # or Yw times overall
