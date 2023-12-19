@@ -1336,7 +1336,7 @@ ggplot() +
 
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-# Permutation test, made with the assistance of ChatGPT
+# Permutation test
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
@@ -1478,7 +1478,7 @@ ggplot() +
 
 resample <- function(x, ...) x[sample.int(length(x), ...)]
 
-# Permutation test, made with the assistance of ChatGPT
+# Permutation test
 psdm <- rep(0,100)
 for (i in 1:100) {
   d2 <- d
