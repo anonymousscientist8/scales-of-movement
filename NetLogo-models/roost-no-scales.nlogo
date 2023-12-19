@@ -221,7 +221,7 @@ to go
     let counter 000
     let saved? FALSE
     while [not saved?] [
-      let filename (word "C:/Users/raven/Documents/interactions" counter ".csv")
+      let filename (word "Filepath/interactions" counter ".csv")
       if not file-exists? filename [
         csv:to-file filename [(groom-log)] of turtles
         set saved? true
