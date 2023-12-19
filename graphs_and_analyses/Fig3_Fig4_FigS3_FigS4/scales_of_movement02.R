@@ -12,7 +12,7 @@ pagerank_est <- data.frame(matrix(ncol=100,nrow=3))
 for (a in 0000:0099) { # For the specified range
 print(a)
 # get raw data
-t <- read.table(gsub(' ', '', paste('C:\\Users\\raven\\Documents\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
+t <- read.table(gsub(' ', '', paste('Filepath\\interactions',as.character(a),'.csv')), sep = ',', fill = T)
 
 # get bat attributes
 bats <- t[,1:4]
@@ -184,5 +184,5 @@ degree_est <- data.frame(t(degree_est))
 pagerank_est <- data.frame(t(pagerank_est))
 
 # Export as csv's
-write.csv(degree_est, "C:\\Users\\raven\\Documents\\degree_est0.csv")
-write.csv(pagerank_est, "C:\\Users\\raven\\Documents\\pagerank_est0.csv")
+write.csv(degree_est, "Filepath\\degree_est0.csv")
+write.csv(pagerank_est, "Filepath\\pagerank_est0.csv")
