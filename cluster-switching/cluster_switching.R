@@ -1,9 +1,3 @@
-## Uses Imran Razik's data of the positions of common vampire bats in a flight
-## cage to generate a dataset marking all observations of vampire bats where
-## that bat was observed to change clusters, simplified here by the a change in
-## which camera the bat was observed on, each pointing at distinct sections of
-## the cage
-## Code written by C. Raven A. Hartman
 
 # Load packages and clear workspace
 library(tidyverse)
