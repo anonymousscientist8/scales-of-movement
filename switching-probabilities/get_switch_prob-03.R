@@ -1,11 +1,14 @@
+## Get probabilities of each bats switching given latency since last
+## observed switch.
+## Writted by C. Raven A. Hartman and Gerald G. Carter
+## Last modified: 11/4/2022
+
 # clear workspace
 rm(list=ls())
 
 # load packages
 library(tidyverse)
 library(lme4)
-
-### Roost Switching
 
 # get roost switching data, filtering out all instances where with more than
 # 14 days since last switch
@@ -53,7 +56,7 @@ bats <- unique(d$ID)
 # make empty matrix of bats (rows) by days (cols)
 bat.days <- matrix(data= NA, nrow= length(bats), ncol= max.days)
 
-# fill in matrix with predicted probabilities
+  # fill in matrix with predicted probabilities
 for (i in 1:nrow(bat.days)) {
   
   # choose bat
@@ -63,6 +66,8 @@ for (i in 1:nrow(bat.days)) {
   d2 <- 
     random_effects %>% 
     filter(bat==temp)
+  
+  print(d2)
   
   # make empty vector for each hour 0 to 24
   days <- rep(NA, max.days)
@@ -103,8 +108,6 @@ bat.days %>%
 
 # clear workspace
 rm(list=ls())
-
-### Cluster Switching
 
 # get cluster switching data
 d <- 
@@ -223,8 +226,6 @@ a <- data.frame(a)
 
 # save
 write.csv(bat.h, file= "cluster_switching_probs.csv")
-
-### Partner Switching
 
 # clear workspace
 rm(list=ls())
